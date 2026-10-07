@@ -12,7 +12,6 @@
         input[type="radio"], input[type="checkbox"] { transform: scale(1.5); accent-color: #2563eb; cursor: pointer; }
     </style>
     
-    <!-- FIREBASE VERSI AMAN UNTUK PENGUJIAN LOKAL (COMPAT) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     
@@ -33,23 +32,29 @@
         const db = firebase.database();
 
         // ==========================================
-        // SOAL & KUNCI JAWABAN (Maksimal 30-36 Soal)
+        // SOAL & PEMBAHASAN
         const paketSoalTKA = [
             {
                 tipe: "Pilihan Ganda",
                 wacana: "Budi pergi ke pasar membeli 5 apel. Di jalan, ia memberikan 2 apel kepada adiknya.",
                 pertanyaan: "Berapa sisa apel Budi?",
                 pilihan: ["1 apel", "2 apel", "3 apel", "4 apel"],
-                kunci: [2] 
+                kunci: [2],
+                pembahasan: "Budi awalnya punya 5 apel, lalu diberikan 2 ke adik. Berarti 5 - 2 = 3 apel."
             },
-            
-			{
+            {
+                tipe: "Pilihan Ganda",
+                wacana: "<img src='https://via.placeholder.com/300x150?text=Peta+Indonesia' alt='Peta'>",
+                pertanyaan: "Berdasarkan gambar di atas, pulau manakah yang memiliki jumlah penduduk terpadat?",
+                pilihan: ["Sumatera", "Jawa", "Kalimantan", "Sulawesi"],
+                kunci: [1],
+                pembahasan: "Pulau Jawa merupakan pulau dengan kepadatan penduduk tertinggi di Indonesia karena menjadi pusat pemerintahan dan ekonomi."
+            },
+            {
                 tipe: "Ganda Kompleks",
                 wacana: `
-                    <img src="BAKWAN.png" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="https://via.placeholder.com/400x300?text=Gambar+Bakwan" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
                     <p style="margin-bottom: 10px;">Bakwan merupakan makanan unik yang banyak disukai. Bakwan muncul karena pengaruh dari berbagai budaya, seperti Cina, Jepang, bahkan Eropa (Portugis).</p>
-                    <p style="margin-bottom: 10px;">Awalnya, bakwan terbuat dari daging dan tepung yang digoreng. Di Jepang, sayur yang digoreng tepung disebut "tempura". Makanan tersebut bisa jadi ikut mempengaruhi berkembangnya bakwan di Indonesia.</p>
-                    <p style="margin-bottom: 10px;">Kini, bakwan berisi aneka sayuran, seperti taoge, kol, dan wortel, yang dicampur dengan adonan tepung berbumbu rempah. Bisa juga ditambahkan isian udang, sosis, atau bakso.</p>
                     <p style="margin-bottom: 10px;">Nama bakwan berbeda di tiap daerah. Jakarta, Yogyakarta, Manado, dan Lampung menyebutnya bakwan. Di banyak kota di Jawa Timur disebut ote-ote atau weci. Di Bandung disebut bala-bala. Sementara, di Semarang dan Pekalongan disebut badak.</p>
                 `,
                 pertanyaan: "Mengapa bakwan dikatakan sebagai makanan yang unik?<br><span style='font-size: 0.85em; color: #3b82f6; font-weight: normal;'>Klik pada setiap jawaban benar. Jawaban benar lebih dari satu.</span>",
@@ -58,8 +63,9 @@
                     "Perkembangannya dipengaruhi budaya negara lain.",
                     "Ditemukan di berbagai daerah dengan sebutan berbeda."
                 ],
-                kunci: [1, 2] 
-            },
+                kunci: [1, 2],
+                pembahasan: "Berdasarkan paragraf pertama, bakwan dipengaruhi budaya negara lain (Cina, Jepang, Eropa). Berdasarkan paragraf kedua, bakwan memiliki sebutan berbeda di setiap daerah (ote-ote, bala-bala, badak)."
+            }
         ];
         // ==========================================
 
@@ -70,11 +76,8 @@
 
         // FUNGSI GURU
         function masukGuru() {
-            let pin = prompt("Masukkan PIN Rahasia Guru:");
-            if(pin !== "ALDO123") {
-                alert("PIN Salah! Kamu bukan Guru.");
-                return;
-            }
+            let pin = prompt("Masukkan PIN Rahasia Guru (Ketik: ALDO123):");
+            if(pin !== "ALDO123") { alert("PIN Salah!"); return; }
 
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('guru-page').classList.remove('hidden');
@@ -113,22 +116,17 @@
         function mulaiUjianSekarang() {
             const menit = parseInt(document.getElementById('durasi-ujian').value) || 60;
             const endTime = Date.now() + (menit * 60 * 1000);
-
             db.ref('tka_live/hasil').set(null); 
-            db.ref('tka_live/state').set({
-                status: 'jalan', endTime: endTime, totalSoal: paketSoalTKA.length
-            });
-
+            db.ref('tka_live/state').set({ status: 'jalan', endTime: endTime, totalSoal: paketSoalTKA.length });
             document.getElementById('status-guru-live').innerText = "UJIAN SEDANG BERLANGSUNG! (" + menit + " Menit)";
-            document.getElementById('status-guru-live').classList.replace('bg-yellow-100', 'bg-green-100');
-            document.getElementById('status-guru-live').classList.add('text-green-700');
+            document.getElementById('status-guru-live').className = "font-bold p-2 rounded-lg mb-6 text-center bg-green-100 text-green-700";
         }
 
         function hentikanUjian() {
             if(confirm("Tarik paksa ujian sekarang? Layar anak-anak akan langsung dikoreksi otomatis.")) {
                 db.ref('tka_live/state').set({ status: 'selesai' });
                 document.getElementById('status-guru-live').innerText = "UJIAN DITUTUP PAKSA.";
-                document.getElementById('status-guru-live').classList.replace('bg-green-100', 'bg-red-100');
+                document.getElementById('status-guru-live').className = "font-bold p-2 rounded-lg mb-6 text-center bg-red-100 text-red-700";
             }
         }
 
@@ -138,7 +136,6 @@
             if(!nama) { alert("Isi nama dulu ya!"); return; }
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('siswa-page').classList.remove('hidden');
-            
             jawabanSiswa = new Array(paketSoalTKA.length).fill([]);
 
             db.ref('tka_live/state').on('value', (snapshot) => {
@@ -153,7 +150,6 @@
                 if(data.status === 'jalan' && !ujianSelesai) {
                     document.getElementById('area-tunggu').classList.add('hidden');
                     document.getElementById('area-ujian').classList.remove('hidden');
-                    
                     if(!timerSiswa) {
                         mulaiTimerGlobal(data.endTime);
                         renderSoal(0);
@@ -177,30 +173,25 @@
             }, 1000);
         }
 
-        function navigasi(arah) {
-            simpanJawabanSaatIni();
-            currentIndex += arah;
-            renderSoal(currentIndex);
-        }
+        function navigasi(arah) { simpanJawabanSaatIni(); currentIndex += arah; renderSoal(currentIndex); }
 
         function simpanJawabanSaatIni() {
             const inputs = document.querySelectorAll('input[name="jawaban"]:checked');
-            const ans = Array.from(inputs).map(el => parseInt(el.value));
-            jawabanSiswa[currentIndex] = ans; 
+            jawabanSiswa[currentIndex] = Array.from(inputs).map(el => parseInt(el.value));
         }
 
         function renderSoal(indeks) {
             const s = paketSoalTKA[indeks];
             document.getElementById('nomor-soal-display').innerText = `Soal ${indeks + 1} dari ${paketSoalTKA.length}`;
-            
             const wadahWacana = document.getElementById('konten-wacana');
+            
             if(s.wacana) { wadahWacana.style.display = "block"; wadahWacana.innerHTML = s.wacana; } 
             else { wadahWacana.style.display = "none"; }
             
             document.getElementById('konten-pertanyaan').innerHTML = s.pertanyaan;
-
             const containerPilihan = document.getElementById('wadah-pilihan');
             containerPilihan.innerHTML = '';
+            
             const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
             const savedAns = jawabanSiswa[indeks] || []; 
 
@@ -234,35 +225,61 @@
         function koreksiOtomatis() {
             ujianSelesai = true;
             clearInterval(timerSiswa);
-            
             document.getElementById('area-ujian').classList.add('hidden');
             document.getElementById('area-tunggu').classList.add('hidden');
             document.getElementById('area-selesai').classList.remove('hidden');
 
             let benar = 0;
             const total = paketSoalTKA.length;
+            let htmlPembahasan = "";
+            let adaSalah = false;
 
             paketSoalTKA.forEach((soal, i) => {
                 const jawab = jawabanSiswa[i] || [];
                 const kunci = soal.kunci || [];
+                let isBenar = false;
+
                 if (jawab.length === kunci.length && kunci.every(val => jawab.includes(val))) {
                     benar++;
+                    isBenar = true;
+                }
+
+                // JIKA SALAH, BUAT KOTAK PEMBAHASAN
+                if (!isBenar) {
+                    adaSalah = true;
+                    // Ambil teks jawaban benar berdasarkan index kunci
+                    let teksJawabanBenar = kunci.map(k => soal.pilihan[k]).join(" <br>✔️ ");
+                    
+                    htmlPembahasan += `
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-200 mb-4 text-left">
+                            <p class="font-bold text-gray-800 text-sm mb-2">Soal ${i + 1}: ${soal.pertanyaan.replace(/<[^>]*>?/gm, '')}</p>
+                            <p class="text-sm text-green-700 font-bold mb-3">Jawaban Tepat:<br>✔️ ${teksJawabanBenar}</p>
+                            <div class="bg-white p-3 rounded-lg border border-red-100">
+                                <p class="text-xs text-red-500 font-bold mb-1">💡 Pembahasan:</p>
+                                <p class="text-sm text-gray-700">${soal.pembahasan || "Tidak ada pembahasan tambahan."}</p>
+                            </div>
+                        </div>
+                    `;
                 }
             });
 
             const nilaiAkhir = Math.round((benar / total) * 100);
-
             document.getElementById('skor-angka').innerText = nilaiAkhir;
             document.getElementById('detail-skor').innerText = `Benar ${benar} dari ${total} soal`;
 
+            // Tampilkan kotak evaluasi jika ada yang salah
+            if (adaSalah) {
+                document.getElementById('wadah-evaluasi').classList.remove('hidden');
+                document.getElementById('list-pembahasan').innerHTML = htmlPembahasan;
+            }
+
             const nama = document.getElementById('nama-siswa').value.trim();
-            db.ref('tka_live/hasil/' + nama).set({
-                nilai: nilaiAkhir, benar: benar
-            });
+            db.ref('tka_live/hasil/' + nama).set({ nilai: nilaiAkhir, benar: benar });
         }
     </script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen">
+    <!-- HALAMAN AWAL (LOGIN) -->
     <div id="login-page" class="flex flex-col items-center justify-center min-h-screen px-4">
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm text-center border-t-8 border-blue-500">
             <h1 class="text-3xl font-black text-blue-600 mb-2">Simulasi AKM CBT</h1>
@@ -273,6 +290,7 @@
         </div>
     </div>
 
+    <!-- HALAMAN GURU -->
     <div id="guru-page" class="hidden p-4 max-w-xl mx-auto mt-6">
         <div class="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-purple-500">
             <div class="flex justify-between items-center mb-2">
@@ -287,7 +305,7 @@
                     <p class="text-blue-600 text-2xl font-black"><span id="jml-soal-info">0</span></p>
                 </div>
                 <div class="bg-gray-50 p-4 rounded-xl border flex-1 text-center">
-                    <p class="text-gray-500 text-sm font-bold mb-1">Set Durasi (Menit)</p>
+                    <p class="text-gray-500 text-sm font-bold mb-1">Durasi (Menit)</p>
                     <input type="number" id="durasi-ujian" value="60" class="w-full p-1 border rounded text-lg font-bold text-center">
                 </div>
             </div>
@@ -305,20 +323,22 @@
                             <th class="p-3 text-sm text-gray-500 text-center">Skor Akhir</th>
                         </tr>
                     </thead>
-                    <tbody id="tabel-hasil-siswa">
-                    </tbody>
+                    <tbody id="tabel-hasil-siswa"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- HALAMAN SISWA -->
     <div id="siswa-page" class="hidden max-w-2xl mx-auto p-4 md:p-6">
+        <!-- RUANG TUNGGU -->
         <div id="area-tunggu" class="flex flex-col items-center justify-center h-[80vh] text-center">
             <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
             <h2 class="text-2xl font-bold text-gray-700">Siap-siap!</h2>
             <p class="text-gray-500 mt-2 font-medium">Ujian akan dimulai serentak oleh guru...</p>
         </div>
 
+        <!-- RUANG UJIAN -->
         <div id="area-ujian" class="hidden">
             <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-4 sticky top-2 z-10 border-b-4 border-blue-500">
                 <span id="nomor-soal-display" class="font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">Soal 1</span>
@@ -341,8 +361,9 @@
             </div>
         </div>
 
-        <div id="area-selesai" class="hidden flex flex-col items-center justify-center h-[80vh] text-center">
-            <div class="bg-white p-10 rounded-3xl shadow-xl w-full border-t-8 border-green-500">
+        <!-- RUANG SELESAI & PEMBAHASAN -->
+        <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-10 text-center">
+            <div class="bg-white p-10 rounded-3xl shadow-xl w-full border-t-8 border-green-500 mb-6">
                 <div class="text-6xl mb-4">🏆</div>
                 <h2 class="text-2xl font-black text-gray-800 mb-1">Ujian Selesai!</h2>
                 <p class="text-gray-500 mb-6">Jawabanmu sudah terkunci dan berhasil dinilai.</p>
@@ -350,6 +371,14 @@
                     <p class="text-sm font-bold text-gray-500 mb-2">NILAI AKHIR KAMU</p>
                     <p id="skor-angka" class="text-7xl font-black text-blue-600 mb-2">0</p>
                     <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-4 py-2 rounded-lg shadow-sm">Benar 0 dari 0 soal</p>
+                </div>
+            </div>
+
+            <!-- KOTAK EVALUASI (HANYA MUNCUL JIKA ADA YANG SALAH) -->
+            <div id="wadah-evaluasi" class="bg-white p-6 rounded-3xl shadow-xl w-full border-t-8 border-red-400 hidden">
+                <h3 class="text-xl font-black text-red-500 mb-4 border-b-2 border-gray-100 pb-2">📚 Cek Soal yang Masih Salah</h3>
+                <div id="list-pembahasan" class="flex flex-col">
+                    <!-- Pembahasan otomatis masuk ke sini -->
                 </div>
             </div>
         </div>
