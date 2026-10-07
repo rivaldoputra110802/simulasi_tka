@@ -40,21 +40,15 @@
                 pertanyaan: "Berapa sisa apel Budi?",
                 pilihan: ["1 apel", "2 apel", "3 apel", "4 apel"],
                 kunci: [2],
-                pembahasan: "Budi awalnya punya 5 apel, lalu diberikan 2 ke adik. Berarti 5 - 2 = 3 apel."
-            },
-            {
-                tipe: "Pilihan Ganda",
-                wacana: "<img src='https://via.placeholder.com/300x150?text=Peta+Indonesia' alt='Peta'>",
-                pertanyaan: "Berdasarkan gambar di atas, pulau manakah yang memiliki jumlah penduduk terpadat?",
-                pilihan: ["Sumatera", "Jawa", "Kalimantan", "Sulawesi"],
-                kunci: [1],
-                pembahasan: "Pulau Jawa merupakan pulau dengan kepadatan penduduk tertinggi di Indonesia karena menjadi pusat pemerintahan dan ekonomi."
+                pembahasan: "Halo! Coba kita hitung sama-sama ya. Awalnya Budi punya 5 apel. Karena *diberikan* kepada adiknya sebanyak 2 apel, berarti apel Budi berkurang. Matematikanya adalah 5 dikurang 2 (5 - 2 = 3). Jangan sampai terkecoh kata-katanya ya!"
             },
             {
                 tipe: "Ganda Kompleks",
                 wacana: `
-                    <img src="https://via.placeholder.com/400x300?text=Gambar+Bakwan" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="bakwan.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
                     <p style="margin-bottom: 10px;">Bakwan merupakan makanan unik yang banyak disukai. Bakwan muncul karena pengaruh dari berbagai budaya, seperti Cina, Jepang, bahkan Eropa (Portugis).</p>
+                    <p style="margin-bottom: 10px;">Awalnya, bakwan terbuat dari daging dan tepung yang digoreng. Di Jepang, sayur yang digoreng tepung disebut "tempura". Makanan tersebut bisa jadi ikut mempengaruhi berkembangnya bakwan di Indonesia.</p>
+                    <p style="margin-bottom: 10px;">Kini, bakwan berisi aneka sayuran, seperti taoge, kol, dan wortel, yang dicampur dengan adonan tepung berbumbu rempah. Bisa juga ditambahkan isian udang, sosis, atau bakso.</p>
                     <p style="margin-bottom: 10px;">Nama bakwan berbeda di tiap daerah. Jakarta, Yogyakarta, Manado, dan Lampung menyebutnya bakwan. Di banyak kota di Jawa Timur disebut ote-ote atau weci. Di Bandung disebut bala-bala. Sementara, di Semarang dan Pekalongan disebut badak.</p>
                 `,
                 pertanyaan: "Mengapa bakwan dikatakan sebagai makanan yang unik?<br><span style='font-size: 0.85em; color: #3b82f6; font-weight: normal;'>Klik pada setiap jawaban benar. Jawaban benar lebih dari satu.</span>",
@@ -64,7 +58,7 @@
                     "Ditemukan di berbagai daerah dengan sebutan berbeda."
                 ],
                 kunci: [1, 2],
-                pembahasan: "Berdasarkan paragraf pertama, bakwan dipengaruhi budaya negara lain (Cina, Jepang, Eropa). Berdasarkan paragraf kedua, bakwan memiliki sebutan berbeda di setiap daerah (ote-ote, bala-bala, badak)."
+                pembahasan: "Yuk kita baca lagi teksnya dengan teliti! Di paragraf pertama disebutkan kalau bakwan itu muncul karena pengaruh dari budaya Cina, Jepang, dan Eropa (Portugis). Lalu di paragraf terakhir, kita bisa melihat kalau bakwan punya banyak sebutan berbeda di tiap daerah, seperti ote-ote, bala-bala, dan badak."
             }
         ];
         // ==========================================
@@ -244,19 +238,23 @@
                     isBenar = true;
                 }
 
-                // JIKA SALAH, BUAT KOTAK PEMBAHASAN
+                // FORMAT BARU PEMBAHASAN UNTUK SOAL YANG SALAH
                 if (!isBenar) {
                     adaSalah = true;
-                    // Ambil teks jawaban benar berdasarkan index kunci
+                    // Tarik teks asli dari pilihan ganda berdasarkan kunci jawaban
                     let teksJawabanBenar = kunci.map(k => soal.pilihan[k]).join(" <br>✔️ ");
                     
                     htmlPembahasan += `
                         <div class="bg-red-50 p-4 rounded-xl border border-red-200 mb-4 text-left">
                             <p class="font-bold text-gray-800 text-sm mb-2">Soal ${i + 1}: ${soal.pertanyaan.replace(/<[^>]*>?/gm, '')}</p>
-                            <p class="text-sm text-green-700 font-bold mb-3">Jawaban Tepat:<br>✔️ ${teksJawabanBenar}</p>
-                            <div class="bg-white p-3 rounded-lg border border-red-100">
+                            
+                            <div class="bg-white p-3 rounded-lg border border-red-100 mb-3">
                                 <p class="text-xs text-red-500 font-bold mb-1">💡 Pembahasan:</p>
-                                <p class="text-sm text-gray-700">${soal.pembahasan || "Tidak ada pembahasan tambahan."}</p>
+                                <p class="text-sm text-gray-700">${soal.pembahasan}</p>
+                            </div>
+
+                            <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                                <p class="text-sm text-green-700 font-bold">✨ Jadi, jawaban yang benar yaitu:<br>✔️ ${teksJawabanBenar}</p>
                             </div>
                         </div>
                     `;
@@ -267,7 +265,6 @@
             document.getElementById('skor-angka').innerText = nilaiAkhir;
             document.getElementById('detail-skor').innerText = `Benar ${benar} dari ${total} soal`;
 
-            // Tampilkan kotak evaluasi jika ada yang salah
             if (adaSalah) {
                 document.getElementById('wadah-evaluasi').classList.remove('hidden');
                 document.getElementById('list-pembahasan').innerHTML = htmlPembahasan;
@@ -331,14 +328,12 @@
 
     <!-- HALAMAN SISWA -->
     <div id="siswa-page" class="hidden max-w-2xl mx-auto p-4 md:p-6">
-        <!-- RUANG TUNGGU -->
         <div id="area-tunggu" class="flex flex-col items-center justify-center h-[80vh] text-center">
             <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
             <h2 class="text-2xl font-bold text-gray-700">Siap-siap!</h2>
             <p class="text-gray-500 mt-2 font-medium">Ujian akan dimulai serentak oleh guru...</p>
         </div>
 
-        <!-- RUANG UJIAN -->
         <div id="area-ujian" class="hidden">
             <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center mb-4 sticky top-2 z-10 border-b-4 border-blue-500">
                 <span id="nomor-soal-display" class="font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">Soal 1</span>
@@ -361,7 +356,6 @@
             </div>
         </div>
 
-        <!-- RUANG SELESAI & PEMBAHASAN -->
         <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-10 text-center">
             <div class="bg-white p-10 rounded-3xl shadow-xl w-full border-t-8 border-green-500 mb-6">
                 <div class="text-6xl mb-4">🏆</div>
@@ -374,11 +368,9 @@
                 </div>
             </div>
 
-            <!-- KOTAK EVALUASI (HANYA MUNCUL JIKA ADA YANG SALAH) -->
             <div id="wadah-evaluasi" class="bg-white p-6 rounded-3xl shadow-xl w-full border-t-8 border-red-400 hidden">
                 <h3 class="text-xl font-black text-red-500 mb-4 border-b-2 border-gray-100 pb-2">📚 Cek Soal yang Masih Salah</h3>
                 <div id="list-pembahasan" class="flex flex-col">
-                    <!-- Pembahasan otomatis masuk ke sini -->
                 </div>
             </div>
         </div>
