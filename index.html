@@ -83,7 +83,7 @@
         // FUNGSI GURU
         function masukGuru(isAuto = false) {
             if (!isAuto) {
-                let pin = prompt("Masukkan PIN Rahasia Guru (Ketik: ALDO123):");
+                let pin = prompt("Masukkan PIN Rahasia Guru:");
                 if(pin !== "ALDO123") { alert("PIN Salah!"); return; }
                 localStorage.setItem('is_guru_ahe', 'true'); // Simpan sesi guru
             }
