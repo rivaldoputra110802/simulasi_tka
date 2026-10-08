@@ -67,11 +67,26 @@
         let currentIndex = 0;
         let jawabanSiswa = []; 
         let ujianSelesai = false; 
+        let namaSiswaAktif = ""; // Menyimpan nama siswa yang sedang ujian
+
+        // FITUR BARU: AUTO-LOGIN SAAT HALAMAN DI-REFRESH
+        window.onload = function() {
+            if (localStorage.getItem('is_guru_ahe') === 'true') {
+                masukGuru(true);
+            } else if (localStorage.getItem('nama_siswa_ahe')) {
+                const savedIndex = localStorage.getItem('index_soal_ahe');
+                if (savedIndex) currentIndex = parseInt(savedIndex);
+                masukSiswa(true);
+            }
+        };
 
         // FUNGSI GURU
-        function masukGuru() {
-            let pin = prompt("Masukkan PIN Rahasia Guru:");
-            if(pin !== "ALDO123") { alert("PIN Salah!"); return; }
+        function masukGuru(isAuto = false) {
+            if (!isAuto) {
+                let pin = prompt("Masukkan PIN Rahasia Guru (Ketik: ALDO123):");
+                if(pin !== "ALDO123") { alert("PIN Salah!"); return; }
+                localStorage.setItem('is_guru_ahe', 'true'); // Simpan sesi guru
+            }
 
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('guru-page').classList.remove('hidden');
@@ -96,6 +111,11 @@
                     `;
                 }
             });
+        }
+
+        function keluarGuru() {
+            localStorage.removeItem('is_guru_ahe');
+            window.location.reload();
         }
 
         function resetDatabase() {
@@ -124,20 +144,44 @@
             }
         }
 
-        // FUNGSI SISWA
-        function masukSiswa() {
-            const nama = document.getElementById('nama-siswa').value.trim();
-            if(!nama) { alert("Isi nama dulu ya!"); return; }
+        // FUNGSI SISWA (SUDAH ANTI-REFRESH)
+        function masukSiswa(isAuto = false) {
+            if (!isAuto) {
+                namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
+                if(!namaSiswaAktif) { alert("Isi nama dulu ya!"); return; }
+                localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); // Simpan nama di HP
+                currentIndex = 0;
+            } else {
+                namaSiswaAktif = localStorage.getItem('nama_siswa_ahe');
+            }
+
+            // Pulihkan jawaban yang pernah di-klik dari memori HP (jika ada)
+            const savedJawaban = localStorage.getItem('jawaban_ahe_' + namaSiswaAktif);
+            if (savedJawaban) {
+                jawabanSiswa = JSON.parse(savedJawaban);
+            } else {
+                jawabanSiswa = new Array(paketSoalTKA.length).fill([]);
+            }
+
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('siswa-page').classList.remove('hidden');
-            jawabanSiswa = new Array(paketSoalTKA.length).fill([]);
-
+            
             db.ref('tka_live/state').on('value', (snapshot) => {
                 const data = snapshot.val();
+                
+                // JIKA GURU KLIK RESET, HAPUS MEMORI HP SISWA & KEMBALIKAN KE LOGIN
                 if(!data || data.status === 'menunggu') {
+                    localStorage.removeItem('nama_siswa_ahe');
+                    localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
+                    localStorage.removeItem('index_soal_ahe');
+                    
                     document.getElementById('area-tunggu').classList.remove('hidden');
                     document.getElementById('area-ujian').classList.add('hidden');
                     document.getElementById('area-selesai').classList.add('hidden');
+                    
+                    document.getElementById('login-page').classList.remove('hidden');
+                    document.getElementById('siswa-page').classList.add('hidden');
+                    document.getElementById('nama-siswa').value = "";
                     return;
                 }
 
@@ -146,7 +190,7 @@
                     document.getElementById('area-ujian').classList.remove('hidden');
                     if(!timerSiswa) {
                         mulaiTimerGlobal(data.endTime);
-                        renderSoal(0);
+                        renderSoal(currentIndex);
                     }
                 } else if (data.status === 'selesai' && !ujianSelesai) {
                     koreksiOtomatis();
@@ -167,11 +211,21 @@
             }, 1000);
         }
 
-        function navigasi(arah) { simpanJawabanSaatIni(); currentIndex += arah; renderSoal(currentIndex); }
+        function navigasi(arah) { 
+            simpanJawabanSaatIni(); 
+            currentIndex += arah; 
+            renderSoal(currentIndex); 
+        }
 
         function simpanJawabanSaatIni() {
             const inputs = document.querySelectorAll('input[name="jawaban"]:checked');
             jawabanSiswa[currentIndex] = Array.from(inputs).map(el => parseInt(el.value));
+            
+            // SIMPAN KE MEMORI HP SETIAP ADA PERUBAHAN
+            if(namaSiswaAktif) {
+                localStorage.setItem('jawaban_ahe_' + namaSiswaAktif, JSON.stringify(jawabanSiswa));
+                localStorage.setItem('index_soal_ahe', currentIndex);
+            }
         }
 
         function renderSoal(indeks) {
@@ -189,11 +243,12 @@
             const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
             const savedAns = jawabanSiswa[indeks] || []; 
 
+            // onchange="simpanJawabanSaatIni()" memastikan jawaban langsung terekam tanpa nunggu klik Next
             s.pilihan.forEach((pil, i) => {
                 const isChecked = savedAns.includes(i) ? "checked" : "";
                 containerPilihan.innerHTML += `
                     <label class="flex items-start gap-4 p-4 bg-white border-2 border-gray-200 rounded-xl mb-3 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition">
-                        <input type="${type}" name="jawaban" value="${i}" ${isChecked} class="w-6 h-6 mt-1 text-blue-600">
+                        <input type="${type}" name="jawaban" value="${i}" ${isChecked} onchange="simpanJawabanSaatIni()" class="w-6 h-6 mt-1 text-blue-600">
                         <span class="text-gray-700 font-medium text-lg">${pil}</span>
                     </label>
                 `;
@@ -238,10 +293,8 @@
                     isBenar = true;
                 }
 
-                // FORMAT BARU PEMBAHASAN UNTUK SOAL YANG SALAH
                 if (!isBenar) {
                     adaSalah = true;
-                    // Tarik teks asli dari pilihan ganda berdasarkan kunci jawaban
                     let teksJawabanBenar = kunci.map(k => soal.pilihan[k]).join(" <br>✔️ ");
                     
                     htmlPembahasan += `
@@ -270,8 +323,7 @@
                 document.getElementById('list-pembahasan').innerHTML = htmlPembahasan;
             }
 
-            const nama = document.getElementById('nama-siswa').value.trim();
-            db.ref('tka_live/hasil/' + nama).set({ nilai: nilaiAkhir, benar: benar });
+            db.ref('tka_live/hasil/' + namaSiswaAktif).set({ nilai: nilaiAkhir, benar: benar });
         }
     </script>
 </head>
@@ -292,7 +344,10 @@
         <div class="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-purple-500">
             <div class="flex justify-between items-center mb-2">
                 <h2 class="text-2xl font-black text-purple-700">Pusat Kendali Guru</h2>
-                <button onclick="resetDatabase()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded shadow">🔄 Reset Ujian</button>
+                <div class="flex gap-2">
+                    <button onclick="keluarGuru()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 px-3 rounded shadow">Logout</button>
+                    <button onclick="resetDatabase()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded shadow">🔄 Reset Ujian</button>
+                </div>
             </div>
             <p id="status-guru-live" class="text-gray-600 font-bold bg-yellow-100 p-2 rounded-lg mb-6 text-center">Status: Menunggu Dimulai</p>
             
