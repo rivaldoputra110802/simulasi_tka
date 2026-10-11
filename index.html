@@ -194,6 +194,8 @@
                         renderSoal(currentIndex);
                     }
                 } else if (data.status === 'selesai' && !ujianSelesai) {
+                    // PENGAMAN: Jika guru menghentikan paksa, simpan layar terakhir anak
+                    simpanJawabanSaatIni();
                     koreksiOtomatis();
                 }
             });
@@ -203,7 +205,14 @@
             timerSiswa = setInterval(() => {
                 const sisa = endTime - Date.now();
                 if(sisa <= 0) {
+                    // PERBAIKAN: Fungsi kumpul otomatis saat waktu habis
                     clearInterval(timerSiswa);
+                    document.getElementById('timer-display').innerText = "00:00";
+                    if(!ujianSelesai) {
+                        alert("Waktu habis! Jawabanmu dikumpulkan otomatis ya.");
+                        simpanJawabanSaatIni();
+                        koreksiOtomatis();
+                    }
                 } else {
                     const m = Math.floor(sisa / 60000);
                     const d = Math.floor((sisa % 60000) / 1000);
