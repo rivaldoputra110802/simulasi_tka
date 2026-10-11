@@ -82,6 +82,7 @@
         let jawabanSiswa = []; 
         let ujianSelesai = false; 
         let namaSiswaAktif = ""; 
+        let isPertamaKaliSiswa = true; 
 
         // AUTO-LOGIN SAAT HALAMAN DI-REFRESH
         window.onload = function() {
@@ -143,9 +144,9 @@
 
         function mulaiUjianSekarang() {
             const menit = parseInt(document.getElementById('durasi-ujian').value) || 60;
-            const endTime = Date.now() + (menit * 60 * 1000);
             db.ref('tka_live/hasil').set(null); 
-            db.ref('tka_live/state').set({ status: 'jalan', endTime: endTime, totalSoal: paketSoalTKA.length });
+            // PERBAIKAN TIMING: Mengirim durasi utuh, bukan waktu spesifik laptop guru
+            db.ref('tka_live/state').set({ status: 'jalan', durasi: menit, totalSoal: paketSoalTKA.length });
             document.getElementById('status-guru-live').innerText = "UJIAN SEDANG BERLANGSUNG! (" + menit + " Menit)";
             document.getElementById('status-guru-live').className = "font-bold p-2 rounded-lg mb-4 text-center bg-green-100 text-green-700 text-sm";
         }
@@ -158,70 +159,98 @@
             }
         }
 
-        // FUNGSI SISWA (SUPER STABIL & ANTI-MACET)
+        // KELUAR SISWA OTOMATIS SAAT DIRESET GURU
+        function keluarSiswa() {
+            localStorage.removeItem('nama_siswa_ahe');
+            if (namaSiswaAktif) {
+                localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
+                localStorage.removeItem('endtime_ahe_' + namaSiswaAktif);
+            }
+            localStorage.removeItem('index_soal_ahe');
+            window.location.reload();
+        }
+
+        // FUNGSI SISWA (SUPER STABIL)
         function masukSiswa(isAuto = false) {
             if (!isAuto) {
                 namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
                 if(!namaSiswaAktif) { alert("Isi nama dulu ya!"); return; }
                 localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); 
                 currentIndex = 0;
+                isPertamaKaliSiswa = true; 
             } else {
                 namaSiswaAktif = localStorage.getItem('nama_siswa_ahe');
+                isPertamaKaliSiswa = true; 
             }
 
             const savedJawaban = localStorage.getItem('jawaban_ahe_' + namaSiswaAktif);
             if (savedJawaban) {
                 jawabanSiswa = JSON.parse(savedJawaban);
             } else {
-                // Perbaikan cara membuat wadah memori jawaban agar tidak error di HP
                 jawabanSiswa = Array.from({length: paketSoalTKA.length}, () => []);
             }
 
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('siswa-page').classList.remove('hidden');
             
-            // Matikan sinyal lama sebelum menyalakan yang baru agar tidak dobel
-            db.ref('tka_live/state').off();
-            
+            db.ref('tka_live/state').off(); 
             db.ref('tka_live/state').on('value', (snapshot) => {
                 const data = snapshot.val();
                 
+                // JIKA GURU KLIK RESET / DATABASE KOSONG
                 if(!data || data.status === 'menunggu') {
-                    // RUANG TUNGGU: Biarkan anak anteng di sini, jangan di-logout!
-                    if (timerSiswa) { clearInterval(timerSiswa); timerSiswa = null; }
-                    ujianSelesai = false;
-                    
-                    document.getElementById('login-page').classList.add('hidden');
-                    document.getElementById('siswa-page').classList.remove('hidden');
-                    
-                    document.getElementById('area-tunggu').classList.remove('hidden');
-                    document.getElementById('area-ujian').classList.add('hidden');
-                    document.getElementById('area-selesai').classList.add('hidden');
-                    return;
+                    if (!isPertamaKaliSiswa) {
+                        // SENSOR TENDANG OTOMATIS: Jika di-reset di tengah jalan, langsung kembali ke login
+                        keluarSiswa();
+                        return;
+                    } else {
+                        // Jika baru pertama kali masuk -> Anteng di Ruang Tunggu
+                        if (timerSiswa) { clearInterval(timerSiswa); timerSiswa = null; }
+                        ujianSelesai = false;
+                        
+                        document.getElementById('area-tunggu').classList.remove('hidden');
+                        document.getElementById('area-ujian').classList.add('hidden');
+                        document.getElementById('area-selesai').classList.add('hidden');
+                    }
                 }
-
-                if(data.status === 'jalan' && !ujianSelesai) {
-                    // Paksa tampilkan layar ujian bagaimanapun kondisi cache-nya
-                    document.getElementById('login-page').classList.add('hidden');
-                    document.getElementById('siswa-page').classList.remove('hidden');
-                    
+                // JIKA UJIAN SEDANG BERJALAN
+                else if(data.status === 'jalan' && !ujianSelesai) {
                     document.getElementById('area-tunggu').classList.add('hidden');
                     document.getElementById('area-ujian').classList.remove('hidden');
+                    document.getElementById('area-selesai').classList.add('hidden');
+                    
+                    renderSoal(currentIndex);
                     
                     if(!timerSiswa) {
-                        mulaiTimerGlobal(data.endTime);
-                        renderSoal(currentIndex);
+                        // PERBAIKAN TIMER: Timer dimulai berdasarkan jam HP anak, bukan jam Laptop guru
+                        mulaiTimerLokal(data.durasi);
                     }
-                } else if (data.status === 'selesai' && !ujianSelesai) {
+                } 
+                // JIKA WAKTU HABIS / DITUTUP GURU
+                else if (data.status === 'selesai' && !ujianSelesai) {
                     simpanJawabanSaatIni();
                     koreksiOtomatis();
                 }
+
+                isPertamaKaliSiswa = false; // Tandai bahwa sinyal awal sudah ditangkap
             });
         }
 
-        function mulaiTimerGlobal(endTime) {
+        // PERBAIKAN TIMER AGAR TIDAK ANJLOK KE 56 MENIT
+        function mulaiTimerLokal(menit) {
+            let endTimeSiswa = localStorage.getItem('endtime_ahe_' + namaSiswaAktif);
+            
+            if (!endTimeSiswa) {
+                // Kunci waktu awal hanya 1x berdasarkan jam HP anak saat soal baru muncul
+                endTimeSiswa = Date.now() + (menit * 60 * 1000);
+                localStorage.setItem('endtime_ahe_' + namaSiswaAktif, endTimeSiswa);
+            } else {
+                // Melanjutkan sisa waktu kalau halamannya di-refresh
+                endTimeSiswa = parseInt(endTimeSiswa);
+            }
+
             timerSiswa = setInterval(() => {
-                const sisa = endTime - Date.now();
+                const sisa = endTimeSiswa - Date.now();
                 if(sisa <= 0) {
                     clearInterval(timerSiswa);
                     document.getElementById('timer-display').innerText = "00:00";
@@ -275,7 +304,6 @@
 
             s.pilihan.forEach((pil, i) => {
                 const isChecked = savedAns.includes(i) ? "checked" : "";
-                // Pilihan ganda dirapatkan ukurannya (Compact Mode)
                 containerPilihan.innerHTML += `
                     <label class="flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg mb-2 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition shadow-sm">
                         <input type="${type}" name="jawaban" value="${i}" ${isChecked} onchange="simpanJawabanSaatIni()" class="w-5 h-5 text-blue-600">
@@ -391,6 +419,8 @@
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
             <h2 class="text-xl font-bold text-gray-700">Tunggu Sebentar ya!</h2>
             <p class="text-gray-500 mt-1 font-medium text-sm">Ujian akan dimulai oleh Guru...</p>
+            <!-- Tombol Batal/Salah ketik -->
+            <button onclick="keluarSiswa()" class="mt-6 text-xs text-red-400 hover:text-red-600 underline p-2">Salah Ketik Nama? (Batal)</button>
         </div>
 
         <!-- RUANG UJIAN COMPACT -->
