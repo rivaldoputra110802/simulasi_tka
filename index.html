@@ -43,7 +43,7 @@
         const db = firebase.database();
 
         // ==========================================
-        // SOAL TKA / AKM ASLI
+        // KOLEKSI SOAL TKA / AKM
         const paketSoalTKA = [
             {
                 tipe: "Ganda Kompleks",
@@ -130,7 +130,181 @@
                     "(100 + 4) : 6 x 12"
                 ],
                 kunci: [0]
-            }
+            },
+            {
+                tipe: "Pilihan Ganda",
+                wacana: "",
+                pertanyaan: "Hasil dari <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>3</span><span>25</span></span> &times; 3 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>7</span><span>6</span></span> + 135 : 15 adalah ....",
+                pilihan: [
+                    "2 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
+                    "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>30</span></span>",
+                    "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
+                    "<span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>32</span><span>225</span></span>"
+                ],
+                kunci: [2]
+            },
+            {
+                tipe: "Benar Salah",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Sebuah program memiliki proses berpikir sebagai berikut:</p>
+                    <img src="flowchart-program.jpg" style="max-width: 250px; margin-bottom: 15px;">
+                `,
+                pertanyaan: "Tentukan Benar atau Salah pada setiap pernyataan berikut berdasarkan program tersebut!",
+                pilihan: [
+                    "Jika bilangan yang dimasukkan adalah bilangan ganjil, maka hasil akhir juga bilangan ganjil.",
+                    "Hasil akhir adalah nol jika bilangan yang dimasukkan adalah bilangan 0.",
+                    "Jika bilangan yang dimasukkan adalah bilangan genap, maka hasil akhir adalah bilangan kelipatan dua."
+                ],
+                kunci: ["0_S", "1_B", "2_B"] 
+            },
+            {
+                tipe: "Pilihan Ganda",
+                wacana: `
+                    <p style="margin-bottom: 10px; font-weight: bold; text-align: justify;">Tahukah kamu bahwa tidak semua benda dapat ditarik magnet?</p>
+                    <img src="magnet.png" style="max-width: 250px; margin-bottom: 15px;">
+                    <p style="margin-bottom: 6px; text-align: justify;">Feromagnetik adalah benda yang mudah ditarik magnet.</p>
+                    <p style="margin-bottom: 6px; text-align: justify;">Paramagnetik adalah benda yang lemah ditarik magnet.</p>
+                    <p style="margin-bottom: 12px; text-align: justify;">Diamagnetik adalah benda yang sulit ditarik magnet.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Di dalam suatu wadah, terdapat 25 benda yang berbeda jenisnya. Satu persatu benda tersebut akan dicoba didekati magnet. Ternyata 12 diantaranya termasuk feromagnetik dan 7 lainnya termasuk paramagnetik. Sisanya adalah benda diamagnetik. Setelah itu, benda tersebut ditambah sehingga menjadi 9 benda diamagnetik.</p>
+                `,
+                pertanyaan: "Berapakah benda diamagnetik yang baru ditambahkan?",
+                pilihan: [
+                    "3 benda.",
+                    "5 benda.",
+                    "9 benda.",
+                    "15 benda."
+                ],
+                kunci: [0]
+            },
+            {
+                tipe: "Ganda Kompleks",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Listrik saat ini menjadi kebutuhan utama bagi kehidupan masyarakat. Salah satu cara yang biasa digunakan untuk mendapat akses listrik adalah dengan menggunakan pembangkit listrik tenaga air.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Di suatu desa, terdapat tiga buah kincir air yang sedang digunakan untuk memenuhi kebutuhan listrik di desa tersebut, yaitu kincir A, B, dan C. Besar daya listrik yang dihasilkan oleh masing-masing kincir setiap harinya dapat dilihat pada gambar berikut.</p>
+                    <img src="kincir-air.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="margin-bottom: 10px; text-align: justify;">Listrik yang dihasilkan akan disimpan di dalam baterai penyimpan sebelum nantinya digunakan. Ketiga kincir tersebut coba digunakan selama dua hari. Setelah itu, daya listrik dan sisa daya yang digunakan oleh warga desa dicatat. Sisa daya listrik dari kincir A 42 watt, kincir B 13 watt, dan kincir C 30 watt.</p>
+                `,
+                pertanyaan: "Berdasarkan penggunaan daya listrik masyarakat, daya listrik dari kincir mana saja yang telah digunakan warga desa lebih dari 150 watt?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban yang benar! Jawaban benar lebih dari satu.</span>",
+                pilihan: [
+                    "Kincir A",
+                    "Kincir B",
+                    "Kincir C"
+                ],
+                kunci: [1, 2]
+            },
+            {
+                tipe: "Pilihan Ganda",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Ikan salmon merupakan salah satu ikan yang memiliki banyak kandungan bergizi.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Berikut ini informasi terkait manfaat mengkonsumsi ikan salmon.</p>
+                    <img src="infografis-salmon.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                `,
+                pertanyaan: "Jika dalam satu sajian ikan salmon terdapat 80 gram protein, berapa porsi salmon yang disajikan dalam sajian tersebut?",
+                pilihan: [
+                    "8 porsi.",
+                    "6 porsi.",
+                    "4 porsi.",
+                    "2 porsi."
+                ],
+                kunci: [2]
+            },
+            {
+                tipe: "Benar Salah",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Keju adalah salah satu produk olahan susu yang memiliki kandungan protein yang tinggi.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Keju dibuat melalui proses koagulasi atau pengentalan susu sapi segar yang bertujuan untuk memindahkan zat-zat padat dalam susu. Proses selanjutnya adalah flokulasi atau penggumpalan protein dalam susu serta 90% lemak susu.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Proses pembuatan keju sederhana dapat dilakukan sendiri dengan menggunakan bahan-bahan sebagai berikut.</p>
+                    <img src="bahan-keju.jpg" style="max-width: 100%; margin-bottom: 15px;">
+                    <p style="margin-bottom: 10px; text-align: justify;">Penggunaan cuka akan membantu mengendapkan protein sehingga terbentuk gumpalan. Sementara itu, penambahan garam bertujuan untuk menurunkan kadar air sekaligus sebagai pengawet.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Berikut merupakan proses pembuatan keju sederhana dari susu segar.</p>
+                    <img src="proses-keju.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <p style="margin-bottom: 8px; font-weight: bold; color: #334155;">Setelah dihitung, ternyata setiap satu resep pembuatan keju dibutuhkan garam sebanyak 4 gr.</p>
+                        <p style="margin-bottom: 8px; color: #475569; text-align: justify;">Seseorang akan membuat keju sebanyak 5 kali resep awal. Persediaan bahan yang dimiliki orang tersebut adalah 2.000 ml susu sapi segar, 140 ml cuka, dan 16 gr garam.</p>
+                        <p style="font-weight: bold; color: #0f172a;">Apakah bahan yang tersedia cukup?</p>
+                    </div>
+                `,
+                pertanyaan: "Tentukan Benar atau Salah untuk setiap pernyataan berikut!",
+                pilihan: [
+                    "Seharusnya disediakan garam sebanyak 20 gr.",
+                    "Terdapat kekurangan cuka sebanyak 40 ml.",
+                    "Tidak perlu tambahan susu sapi segar."
+                ],
+                kunci: ["0_B", "1_S", "2_B"]
+            },
+            {
+                tipe: "Ganda Kompleks",
+                wacana: `
+                    <p style="margin-bottom: 10px; font-weight: bold; text-align: center;"><i>Laundry</i> Koin</p>
+                    <p style="margin-bottom: 10px; text-align: justify;"><i>Laundry</i> koin adalah tempat mencuci pakaian yang sangat mudah digunakan. Di sini, kita tidak perlu mencuci baju sendiri di rumah. Kita hanya perlu membawa baju kotor ke laundry koin. Di tempat ini, ada mesin cuci besar yang bisa digunakan oleh siapa saja.</p>
+                    <p style="margin-bottom: 10px; text-align: justify;">Linda dan Vidya mencuci baju kotor mereka di tempat <i>laundry</i> koin yang sama. Mereka memiliki jadwal berbeda untuk pergi ke <i>laundry</i> koin. Akan tetapi, keduanya memiliki jam kedatangan yang sama yaitu sekitar pukul 16.00. Perhatikan gambar berikut ini.</p>
+                    <img src="laundry-koin.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                `,
+                pertanyaan: "Pada tanggal 10 Agustus 2024, Linda dan Vidya bertemu di tempat <i>laundry</i> tersebut. Kapankah mereka akan bertemu kembali?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban benar! Jawaban benar lebih dari satu.</span>",
+                pilihan: [
+                    "3 September 2024",
+                    "27 September 2024",
+                    "21 October 2024"
+                ],
+                kunci: [0, 1, 2]
+            },
+            {
+                tipe: "Benar Salah",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Perajin kayu sedang membuat hiasan dinding berbentuk huruf berikut.</p>
+                    <img src="huruf-e.jpg" style="max-width: 150px; margin-bottom: 15px;">
+                    <p style="margin-bottom: 10px; text-align: justify;">Bentuk huruf tersebut dianggap menjadi satu bidang datar.</p>
+                `,
+                pertanyaan: "Bagaimanakah ciri-ciri hiasan dinding tersebut?",
+                pilihan: [
+                    "Memiliki 12 sisi.",
+                    "Terdapat 12 titik sudut.",
+                    "Terdapat 10 sudut siku-siku."
+                ],
+                kunci: ["0_B", "1_B", "2_S"]
+            },
+            {
+                tipe: "Benar Salah",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan sebuah segi banyak yang dibentuk dari gabungan beberapa bangun datar tanpa beririsan.</p>
+                    <img src="segi-banyak.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="margin-bottom: 10px; text-align: justify;">Berikut ini adalah pernyataan banyak segitiga dan segiempat yang menyusun segi banyak tersebut.</p>
+                `,
+                pertanyaan: "Tentukan Benar atau Salah pada setiap pernyataan berikut!",
+                pilihan: [
+                    "3 segitiga dan 1 persegi panjang.",
+                    "4 segitiga dan 1 trapesium.",
+                    "5 segitiga dan 1 layang-layang."
+                ],
+                kunci: ["0_B", "1_B", "2_S"]
+            },
+            {
+                tipe: "Pilihan Ganda",
+                wacana: `
+                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan susunan kubus berukuran sama.</p>
+                    <img src="susunan-kubus.png" style="max-width: 220px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+                `,
+                pertanyaan: "Berdasarkan gambar tersebut, jumlah semua kubus yang mungkin adalah ....",
+                pilihan: [
+                    "12",
+                    "13",
+                    "14",
+                    "15"
+                ],
+                kunci: [3]
+            },
+            {
+                tipe: "Ganda Kompleks",
+                wacana: "",
+                pertanyaan: "Berikut ini, manakah yang menunjukkan hasil pengukuran yang paling tepat dan masuk akal?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban benar! Jawaban benar lebih dari satu.</span>",
+                pilihan: [
+                    "Tinggi tiang bendera di sekolah adalah 8 meter.",
+                    "Jarak rumah Budi ke sekolah adalah 30 milimeter.",
+                    "Lebar buku tulis ini sekitar 20 centimeter."
+                ],
+                kunci: [0, 2]
+            },
+            
         ];
         // ==========================================
 
@@ -141,7 +315,7 @@
         let namaSiswaAktif = ""; 
         let isPertamaKaliSiswa = true; 
 
-        // AUTO-LOGIN SAAT HALAMAN DI-REFRESH
+        // AUTO-LOGIN
         window.onload = function() {
             if (localStorage.getItem('is_guru_ahe') === 'true') {
                 masukGuru(true);
@@ -192,17 +366,19 @@
 
         function resetDatabase() {
             if(confirm("Yakin ingin mereset ujian? Semua nilai anak dan status ujian sebelumnya akan dihapus permanen!")) {
-                db.ref('tka_live').set(null).then(() => {
-                    alert("Database berhasil dibersihkan! Ujian kembali ke status 'Menunggu'.");
-                    window.location.reload(); 
-                });
+                db.ref('tka_live/state').set({ status: 'reset' });
+                setTimeout(() => {
+                    db.ref('tka_live').set(null).then(() => {
+                        alert("Database bersih! Anak-anak sudah dikembalikan ke laman awal.");
+                        window.location.reload(); 
+                    });
+                }, 1500);
             }
         }
 
         function mulaiUjianSekarang() {
             const menit = parseInt(document.getElementById('durasi-ujian').value) || 60;
             db.ref('tka_live/hasil').set(null); 
-            // PERBAIKAN TIMING: Mengirim durasi utuh, bukan waktu spesifik laptop guru
             db.ref('tka_live/state').set({ status: 'jalan', durasi: menit, totalSoal: paketSoalTKA.length });
             document.getElementById('status-guru-live').innerText = "UJIAN SEDANG BERLANGSUNG! (" + menit + " Menit)";
             document.getElementById('status-guru-live').className = "font-bold p-2 rounded-lg mb-4 text-center bg-green-100 text-green-700 text-sm";
@@ -216,28 +392,26 @@
             }
         }
 
-        // KELUAR SISWA OTOMATIS SAAT DIRESET GURU
         function keluarSiswa() {
-            localStorage.removeItem('nama_siswa_ahe');
-            if (namaSiswaAktif) {
-                localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
-                localStorage.removeItem('endtime_ahe_' + namaSiswaAktif);
+            let nama = namaSiswaAktif || localStorage.getItem('nama_siswa_ahe');
+            if (nama) {
+                localStorage.removeItem('jawaban_ahe_' + nama);
+                localStorage.removeItem('endtime_ahe_' + nama);
             }
+            localStorage.removeItem('nama_siswa_ahe');
             localStorage.removeItem('index_soal_ahe');
             window.location.reload();
         }
 
-        // FUNGSI SISWA (SUPER STABIL)
+        // FUNGSI SISWA
         function masukSiswa(isAuto = false) {
             if (!isAuto) {
                 namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
                 if(!namaSiswaAktif) { alert("Isi nama dulu ya!"); return; }
                 localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); 
                 currentIndex = 0;
-                isPertamaKaliSiswa = true; 
             } else {
                 namaSiswaAktif = localStorage.getItem('nama_siswa_ahe');
-                isPertamaKaliSiswa = true; 
             }
 
             const savedJawaban = localStorage.getItem('jawaban_ahe_' + namaSiswaAktif);
@@ -246,63 +420,52 @@
             } else {
                 jawabanSiswa = Array.from({length: paketSoalTKA.length}, () => []);
             }
-
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('siswa-page').classList.remove('hidden');
             
             db.ref('tka_live/state').off(); 
             db.ref('tka_live/state').on('value', (snapshot) => {
                 const data = snapshot.val();
                 
-                // JIKA GURU KLIK RESET / DATABASE KOSONG
-                if(!data || data.status === 'menunggu') {
-                    if (!isPertamaKaliSiswa) {
-                        // SENSOR TENDANG OTOMATIS: Jika di-reset di tengah jalan, langsung kembali ke login
-                        keluarSiswa();
-                        return;
-                    } else {
-                        // Jika baru pertama kali masuk -> Anteng di Ruang Tunggu
-                        if (timerSiswa) { clearInterval(timerSiswa); timerSiswa = null; }
-                        ujianSelesai = false;
-                        
-                        document.getElementById('area-tunggu').classList.remove('hidden');
-                        document.getElementById('area-ujian').classList.add('hidden');
-                        document.getElementById('area-selesai').classList.add('hidden');
-                    }
+                if (data && data.status === 'reset') {
+                    keluarSiswa();
+                    return;
                 }
-                // JIKA UJIAN SEDANG BERJALAN
-                else if(data.status === 'jalan' && !ujianSelesai) {
+
+                if (!data || data.status === 'menunggu') {
+                    if (timerSiswa) { clearInterval(timerSiswa); timerSiswa = null; }
+                    ujianSelesai = false;
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('siswa-page').classList.remove('hidden');
+                    document.getElementById('area-tunggu').classList.remove('hidden');
+                    document.getElementById('area-ujian').classList.add('hidden');
+                    document.getElementById('area-selesai').classList.add('hidden');
+                    return;
+                }
+
+                if (data.status === 'jalan' && !ujianSelesai) {
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('siswa-page').classList.remove('hidden');
                     document.getElementById('area-tunggu').classList.add('hidden');
                     document.getElementById('area-ujian').classList.remove('hidden');
                     document.getElementById('area-selesai').classList.add('hidden');
                     
                     renderSoal(currentIndex);
                     
-                    if(!timerSiswa) {
-                        // PERBAIKAN TIMER: Timer dimulai berdasarkan jam HP anak, bukan jam Laptop guru
-                        mulaiTimerLokal(data.durasi);
-                    }
+                    if(!timerSiswa) { mulaiTimerLokal(data.durasi); }
                 } 
-                // JIKA WAKTU HABIS / DITUTUP GURU
                 else if (data.status === 'selesai' && !ujianSelesai) {
                     simpanJawabanSaatIni();
                     koreksiOtomatis();
                 }
-
-                isPertamaKaliSiswa = false; // Tandai bahwa sinyal awal sudah ditangkap
             });
         }
 
-        // PERBAIKAN TIMER AGAR TIDAK ANJLOK KE 56 MENIT
         function mulaiTimerLokal(menit) {
             let endTimeSiswa = localStorage.getItem('endtime_ahe_' + namaSiswaAktif);
             
             if (!endTimeSiswa) {
-                // Kunci waktu awal hanya 1x berdasarkan jam HP anak saat soal baru muncul
                 endTimeSiswa = Date.now() + (menit * 60 * 1000);
                 localStorage.setItem('endtime_ahe_' + namaSiswaAktif, endTimeSiswa);
             } else {
-                // Melanjutkan sisa waktu kalau halamannya di-refresh
                 endTimeSiswa = parseInt(endTimeSiswa);
             }
 
@@ -323,16 +486,21 @@
             }, 1000);
         }
 
-        // FUNGSI NAVIGASI
         function navigasi(arah) { 
             simpanJawabanSaatIni(); 
             currentIndex += arah; 
             renderSoal(currentIndex); 
         }
 
+        // UPGRADE SISTEM PENYIMPANAN JAWABAN (MENDUKUNG TABEL BENAR/SALAH)
         function simpanJawabanSaatIni() {
-            const inputs = document.querySelectorAll('input[name="jawaban"]:checked');
-            jawabanSiswa[currentIndex] = Array.from(inputs).map(el => parseInt(el.value));
+            const container = document.getElementById('wadah-pilihan');
+            const inputs = container.querySelectorAll('input:checked');
+            
+            jawabanSiswa[currentIndex] = Array.from(inputs).map(el => {
+                // Jika isinya berupa huruf (contoh: "0_B"), biarkan jadi teks. Kalau angka murni, jadikan format angka.
+                return el.value.includes('_') ? el.value : parseInt(el.value);
+            });
             
             if(namaSiswaAktif) {
                 localStorage.setItem('jawaban_ahe_' + namaSiswaAktif, JSON.stringify(jawabanSiswa));
@@ -356,22 +524,58 @@
             const containerPilihan = document.getElementById('wadah-pilihan');
             containerPilihan.innerHTML = '';
             
-            const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
             const savedAns = jawabanSiswa[indeks] || []; 
 
-            s.pilihan.forEach((pil, i) => {
-                const isChecked = savedAns.includes(i) ? "checked" : "";
-                containerPilihan.innerHTML += `
-                    <label class="flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg mb-2 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition shadow-sm">
-                        <input type="${type}" name="jawaban" value="${i}" ${isChecked} onchange="simpanJawabanSaatIni()" class="w-5 h-5 text-blue-600">
-                        <span class="text-gray-800 font-medium text-sm md:text-base leading-snug w-full">${pil}</span>
-                    </label>
+            // MESIN PERENDERAN KHUSUS UNTUK TABEL BENAR SALAH
+            if (s.tipe === 'Benar Salah') {
+                let htmlTable = `
+                    <div class="overflow-hidden border border-blue-300 rounded-xl mb-2 shadow-sm">
+                    <table class="w-full text-sm text-left" style="border:none;">
+                        <thead class="bg-blue-100 text-blue-900 font-bold" style="border-bottom: 2px solid #93c5fd;">
+                            <tr>
+                                <th class="p-3" style="border:none;">Pernyataan</th>
+                                <th class="p-3 text-center w-16" style="border:none;">Benar</th>
+                                <th class="p-3 text-center w-16" style="border:none;">Salah</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
                 `;
-            });
+                s.pilihan.forEach((pil, i) => {
+                    const valB = i + "_B";
+                    const valS = i + "_S";
+                    const isCheckedB = savedAns.includes(valB) ? "checked" : "";
+                    const isCheckedS = savedAns.includes(valS) ? "checked" : "";
+                    
+                    htmlTable += `
+                        <tr class="hover:bg-blue-50 transition" style="border-bottom: 1px solid #e5e7eb;">
+                            <td class="p-3 text-gray-700 leading-snug" style="border:none;">${pil}</td>
+                            <td class="p-3 text-center align-middle" style="border:none; border-left: 1px solid #e5e7eb;">
+                                <input type="radio" name="bs_${i}" value="${valB}" ${isCheckedB} onchange="simpanJawabanSaatIni()" class="w-5 h-5 accent-blue-600 cursor-pointer">
+                            </td>
+                            <td class="p-3 text-center align-middle" style="border:none; border-left: 1px solid #e5e7eb;">
+                                <input type="radio" name="bs_${i}" value="${valS}" ${isCheckedS} onchange="simpanJawabanSaatIni()" class="w-5 h-5 accent-blue-600 cursor-pointer">
+                            </td>
+                        </tr>
+                    `;
+                });
+                htmlTable += `</tbody></table></div>`;
+                containerPilihan.innerHTML = htmlTable;
+            } 
+            // PERENDERAN UNTUK PILIHAN GANDA & GANDA KOMPLEKS BIASA
+            else {
+                const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
+                s.pilihan.forEach((pil, i) => {
+                    const isChecked = savedAns.includes(i) ? "checked" : "";
+                    containerPilihan.innerHTML += `
+                        <label class="flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg mb-2 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition shadow-sm">
+                            <input type="${type}" name="jawaban" value="${i}" ${isChecked} onchange="simpanJawabanSaatIni()" class="w-5 h-5 text-blue-600">
+                            <span class="text-gray-800 font-medium text-sm md:text-base leading-snug w-full">${pil}</span>
+                        </label>
+                    `;
+                });
+            }
 
-            // LOGIKA NAVIGASI BAWAH
             document.getElementById('btn-prev').style.display = indeks === 0 ? 'none' : 'block';
-            
             if (indeks === paketSoalTKA.length - 1) {
                 document.getElementById('btn-next').style.display = 'none';
                 document.getElementById('btn-selesai').style.display = 'block';
@@ -402,6 +606,7 @@
                 const jawab = jawabanSiswa[i] || [];
                 const kunci = soal.kunci || [];
 
+                // Cek akurasi: Panjang susunan jawaban dan nilainya harus benar-benar cocok dengan kunci
                 if (jawab.length === kunci.length && kunci.every(val => jawab.includes(val))) {
                     benar++;
                 }
@@ -476,13 +681,11 @@
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
             <h2 class="text-xl font-bold text-gray-700">Tunggu Sebentar ya!</h2>
             <p class="text-gray-500 mt-1 font-medium text-sm">Ujian akan dimulai oleh Guru...</p>
-            <!-- Tombol Batal/Salah ketik -->
             <button onclick="keluarSiswa()" class="mt-6 text-xs text-red-400 hover:text-red-600 underline p-2">Salah Ketik Nama? (Batal)</button>
         </div>
 
         <!-- RUANG UJIAN COMPACT -->
         <div id="area-ujian" class="hidden">
-            <!-- Header Nempel di Atas (Sticky) -->
             <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-2 z-10 border-b-2 border-blue-500">
                 <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm">Soal 1</span>
                 <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
@@ -490,19 +693,12 @@
                 </div>
             </div>
 
-            <!-- Kontainer Soal -->
             <div class="bg-white p-4 rounded-xl shadow-sm mb-3 konten-soal">
-                <!-- Kotak Wacana Cerdas -->
                 <div id="konten-wacana" class="mb-3 text-gray-800 text-sm md:text-base leading-relaxed max-h-[35vh] overflow-y-auto bg-amber-50 p-3 rounded-lg border border-amber-200 shadow-inner scroll-wacana hidden"></div>
-                
-                <!-- Pertanyaan -->
                 <h3 id="konten-pertanyaan" class="text-base md:text-lg font-bold text-gray-900 mb-4 leading-snug"></h3>
-                
-                <!-- Pilihan Ganda -->
                 <div id="wadah-pilihan" class="flex flex-col"></div>
             </div>
             
-            <!-- Navigasi Bawah -->
             <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm">
                 <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg text-sm hidden">Kembali</button>
                 <div class="flex-1"></div> 
