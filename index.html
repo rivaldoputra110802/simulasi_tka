@@ -305,7 +305,7 @@
                 <h2 class="text-2xl font-black text-purple-700">Pusat Kendali Guru</h2>
                 <div class="flex gap-2">
                     <button onclick="keluarGuru()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 px-3 rounded shadow">Logout</button>
-                    <button onclick="resetDatabase()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded shadow">🔄 Reset Ujian</button>
+                    <button onclick="resetDatabase()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded shadow">Reset Ujian</button>
                 </div>
             </div>
             <p id="status-guru-live" class="text-gray-600 font-bold bg-yellow-100 p-2 rounded-lg mb-6 text-center">Status: Menunggu Dimulai</p>
@@ -321,7 +321,7 @@
                 </div>
             </div>
 
-            <button id="btn-mulai-ujian" onclick="mulaiUjianSekarang()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl text-xl shadow-[0_4px_0_0_#15803d] mb-4">🚀 MULAI SERENTAK SEMUA HP</button>
+            <button id="btn-mulai-ujian" onclick="mulaiUjianSekarang()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl text-xl shadow-[0_4px_0_0_#15803d] mb-4">MULAI SERENTAK SEMUA HP</button>
             <button onclick="hentikanUjian()" class="w-full bg-red-100 text-red-600 font-bold py-2 rounded-lg mb-8">Hentikan / Kumpul Paksa Sekarang</button>
 
             <h3 class="font-black text-gray-700 mb-3 border-b-2 pb-2">📋 Laporan Nilai Siswa (Live)</h3>
@@ -363,18 +363,18 @@
             </div>
             
             <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm">
-                <!-- TOMBOL SEBELUMNYA (Otomatis muncul dari Soal ke-2) -->
-                <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hidden">⬅️ Sebelumnya</button>
+                <!-- TOMBOL SEBELUMNYA -->
+                <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hidden">Sebelumnya</button>
                 <div class="flex-1"></div> 
                 <!-- TOMBOL SELANJUTNYA / SELESAI -->
-                <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#1d4ed8]">Selanjutnya ➡️</button>
-                <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#15803d] hidden">Selesai & Kumpul ✅</button>
+                <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#1d4ed8]">Selanjutnya</button>
+                <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#15803d] hidden">Selesai & Kumpul</button>
             </div>
         </div>
 
         <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-10 text-center">
             <div class="bg-white p-10 rounded-3xl shadow-xl w-full border-t-8 border-green-500 mb-6">
-                <div class="text-6xl mb-4">🏆</div>
+                <div class="text-6xl mb-4">SELAMAT!</div>
                 <h2 class="text-2xl font-black text-gray-800 mb-1">Ujian Selesai!</h2>
                 <p class="text-gray-500 mb-6">Jawabanmu sudah terkunci dan berhasil dinilai.</p>
                 <div class="bg-blue-50 rounded-2xl p-6 border-2 border-blue-100">
