@@ -32,20 +32,19 @@
         const db = firebase.database();
 
         // ==========================================
-        // SOAL & PEMBAHASAN
+        // SOAL UJIAN (Tanpa Pembahasan)
         const paketSoalTKA = [
             {
                 tipe: "Pilihan Ganda",
                 wacana: "Budi pergi ke pasar membeli 5 apel. Di jalan, ia memberikan 2 apel kepada adiknya.",
                 pertanyaan: "Berapa sisa apel Budi?",
                 pilihan: ["1 apel", "2 apel", "3 apel", "4 apel"],
-                kunci: [2],
-                pembahasan: "Halo! Coba kita hitung sama-sama ya. Awalnya Budi punya 5 apel. Karena *diberikan* kepada adiknya sebanyak 2 apel, berarti apel Budi berkurang. Matematikanya adalah 5 dikurang 2 (5 - 2 = 3). Jangan sampai terkecoh kata-katanya ya!"
+                kunci: [2]
             },
             {
                 tipe: "Ganda Kompleks",
                 wacana: `
-                    <img src="bakwan.png" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
+                    <img src="bakwan.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px;">
                     <p style="margin-bottom: 10px;">Bakwan merupakan makanan unik yang banyak disukai. Bakwan muncul karena pengaruh dari berbagai budaya, seperti Cina, Jepang, bahkan Eropa (Portugis).</p>
                     <p style="margin-bottom: 10px;">Awalnya, bakwan terbuat dari daging dan tepung yang digoreng. Di Jepang, sayur yang digoreng tepung disebut "tempura". Makanan tersebut bisa jadi ikut mempengaruhi berkembangnya bakwan di Indonesia.</p>
                     <p style="margin-bottom: 10px;">Kini, bakwan berisi aneka sayuran, seperti taoge, kol, dan wortel, yang dicampur dengan adonan tepung berbumbu rempah. Bisa juga ditambahkan isian udang, sosis, atau bakso.</p>
@@ -57,8 +56,7 @@
                     "Perkembangannya dipengaruhi budaya negara lain.",
                     "Ditemukan di berbagai daerah dengan sebutan berbeda."
                 ],
-                kunci: [1, 2],
-                pembahasan: "Yuk kita baca lagi teksnya dengan teliti! Di paragraf pertama disebutkan kalau bakwan itu muncul karena pengaruh dari budaya Cina, Jepang, dan Eropa (Portugis). Lalu di paragraf terakhir, kita bisa melihat kalau bakwan punya banyak sebutan berbeda di tiap daerah, seperti ote-ote, bala-bala, dan badak."
+                kunci: [1, 2]
             }
         ];
         // ==========================================
@@ -67,9 +65,9 @@
         let currentIndex = 0;
         let jawabanSiswa = []; 
         let ujianSelesai = false; 
-        let namaSiswaAktif = ""; // Menyimpan nama siswa yang sedang ujian
+        let namaSiswaAktif = ""; 
 
-        // FITUR BARU: AUTO-LOGIN SAAT HALAMAN DI-REFRESH
+        // AUTO-LOGIN SAAT HALAMAN DI-REFRESH
         window.onload = function() {
             if (localStorage.getItem('is_guru_ahe') === 'true') {
                 masukGuru(true);
@@ -83,9 +81,9 @@
         // FUNGSI GURU
         function masukGuru(isAuto = false) {
             if (!isAuto) {
-                let pin = prompt("Masukkan PIN Rahasia Guru:");
+                let pin = prompt("Masukkan PIN Rahasia Guru (Ketik: ALDO123):");
                 if(pin !== "ALDO123") { alert("PIN Salah!"); return; }
-                localStorage.setItem('is_guru_ahe', 'true'); // Simpan sesi guru
+                localStorage.setItem('is_guru_ahe', 'true'); 
             }
 
             document.getElementById('login-page').classList.add('hidden');
@@ -144,18 +142,17 @@
             }
         }
 
-        // FUNGSI SISWA (SUDAH ANTI-REFRESH)
+        // FUNGSI SISWA (ANTI-REFRESH)
         function masukSiswa(isAuto = false) {
             if (!isAuto) {
                 namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
                 if(!namaSiswaAktif) { alert("Isi nama dulu ya!"); return; }
-                localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); // Simpan nama di HP
+                localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); 
                 currentIndex = 0;
             } else {
                 namaSiswaAktif = localStorage.getItem('nama_siswa_ahe');
             }
 
-            // Pulihkan jawaban yang pernah di-klik dari memori HP (jika ada)
             const savedJawaban = localStorage.getItem('jawaban_ahe_' + namaSiswaAktif);
             if (savedJawaban) {
                 jawabanSiswa = JSON.parse(savedJawaban);
@@ -169,7 +166,6 @@
             db.ref('tka_live/state').on('value', (snapshot) => {
                 const data = snapshot.val();
                 
-                // JIKA GURU KLIK RESET, HAPUS MEMORI HP SISWA & KEMBALIKAN KE LOGIN
                 if(!data || data.status === 'menunggu') {
                     localStorage.removeItem('nama_siswa_ahe');
                     localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
@@ -211,6 +207,7 @@
             }, 1000);
         }
 
+        // FUNGSI NAVIGASI
         function navigasi(arah) { 
             simpanJawabanSaatIni(); 
             currentIndex += arah; 
@@ -221,7 +218,6 @@
             const inputs = document.querySelectorAll('input[name="jawaban"]:checked');
             jawabanSiswa[currentIndex] = Array.from(inputs).map(el => parseInt(el.value));
             
-            // SIMPAN KE MEMORI HP SETIAP ADA PERUBAHAN
             if(namaSiswaAktif) {
                 localStorage.setItem('jawaban_ahe_' + namaSiswaAktif, JSON.stringify(jawabanSiswa));
                 localStorage.setItem('index_soal_ahe', currentIndex);
@@ -243,7 +239,6 @@
             const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
             const savedAns = jawabanSiswa[indeks] || []; 
 
-            // onchange="simpanJawabanSaatIni()" memastikan jawaban langsung terekam tanpa nunggu klik Next
             s.pilihan.forEach((pil, i) => {
                 const isChecked = savedAns.includes(i) ? "checked" : "";
                 containerPilihan.innerHTML += `
@@ -254,7 +249,10 @@
                 `;
             });
 
+            // LOGIKA MUNCUL/HILANG TOMBOL "SEBELUMNYA"
             document.getElementById('btn-prev').style.display = indeks === 0 ? 'none' : 'block';
+            
+            // LOGIKA MUNCUL/HILANG TOMBOL "SELANJUTNYA" VS "SELESAI"
             if (indeks === paketSoalTKA.length - 1) {
                 document.getElementById('btn-next').style.display = 'none';
                 document.getElementById('btn-selesai').style.display = 'block';
@@ -280,48 +278,19 @@
 
             let benar = 0;
             const total = paketSoalTKA.length;
-            let htmlPembahasan = "";
-            let adaSalah = false;
 
             paketSoalTKA.forEach((soal, i) => {
                 const jawab = jawabanSiswa[i] || [];
                 const kunci = soal.kunci || [];
-                let isBenar = false;
 
                 if (jawab.length === kunci.length && kunci.every(val => jawab.includes(val))) {
                     benar++;
-                    isBenar = true;
-                }
-
-                if (!isBenar) {
-                    adaSalah = true;
-                    let teksJawabanBenar = kunci.map(k => soal.pilihan[k]).join(" <br>✔️ ");
-                    
-                    htmlPembahasan += `
-                        <div class="bg-red-50 p-4 rounded-xl border border-red-200 mb-4 text-left">
-                            <p class="font-bold text-gray-800 text-sm mb-2">Soal ${i + 1}: ${soal.pertanyaan.replace(/<[^>]*>?/gm, '')}</p>
-                            
-                            <div class="bg-white p-3 rounded-lg border border-red-100 mb-3">
-                                <p class="text-xs text-red-500 font-bold mb-1">💡 Pembahasan:</p>
-                                <p class="text-sm text-gray-700">${soal.pembahasan}</p>
-                            </div>
-
-                            <div class="bg-green-50 p-3 rounded-lg border border-green-200">
-                                <p class="text-sm text-green-700 font-bold">✨ Jadi, jawaban yang benar yaitu:<br>✔️ ${teksJawabanBenar}</p>
-                            </div>
-                        </div>
-                    `;
                 }
             });
 
             const nilaiAkhir = Math.round((benar / total) * 100);
             document.getElementById('skor-angka').innerText = nilaiAkhir;
             document.getElementById('detail-skor').innerText = `Benar ${benar} dari ${total} soal`;
-
-            if (adaSalah) {
-                document.getElementById('wadah-evaluasi').classList.remove('hidden');
-                document.getElementById('list-pembahasan').innerHTML = htmlPembahasan;
-            }
 
             db.ref('tka_live/hasil/' + namaSiswaAktif).set({ nilai: nilaiAkhir, benar: benar });
         }
@@ -404,8 +373,10 @@
             </div>
             
             <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm">
+                <!-- TOMBOL SEBELUMNYA (Otomatis muncul dari Soal ke-2) -->
                 <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hidden">⬅️ Sebelumnya</button>
                 <div class="flex-1"></div> 
+                <!-- TOMBOL SELANJUTNYA / SELESAI -->
                 <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#1d4ed8]">Selanjutnya ➡️</button>
                 <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#15803d] hidden">Selesai & Kumpul ✅</button>
             </div>
@@ -420,12 +391,6 @@
                     <p class="text-sm font-bold text-gray-500 mb-2">NILAI AKHIR KAMU</p>
                     <p id="skor-angka" class="text-7xl font-black text-blue-600 mb-2">0</p>
                     <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-4 py-2 rounded-lg shadow-sm">Benar 0 dari 0 soal</p>
-                </div>
-            </div>
-
-            <div id="wadah-evaluasi" class="bg-white p-6 rounded-3xl shadow-xl w-full border-t-8 border-red-400 hidden">
-                <h3 class="text-xl font-black text-red-500 mb-4 border-b-2 border-gray-100 pb-2">📚 Cek Soal yang Masih Salah</h3>
-                <div id="list-pembahasan" class="flex flex-col">
                 </div>
             </div>
         </div>
