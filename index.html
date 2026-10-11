@@ -158,7 +158,7 @@
             }
         }
 
-        // FUNGSI SISWA (ANTI-REFRESH)
+        // FUNGSI SISWA (SUPER STABIL & ANTI-MACET)
         function masukSiswa(isAuto = false) {
             if (!isAuto) {
                 namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
@@ -173,33 +173,41 @@
             if (savedJawaban) {
                 jawabanSiswa = JSON.parse(savedJawaban);
             } else {
-                jawabanSiswa = new Array(paketSoalTKA.length).fill([]);
+                // Perbaikan cara membuat wadah memori jawaban agar tidak error di HP
+                jawabanSiswa = Array.from({length: paketSoalTKA.length}, () => []);
             }
 
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('siswa-page').classList.remove('hidden');
             
+            // Matikan sinyal lama sebelum menyalakan yang baru agar tidak dobel
+            db.ref('tka_live/state').off();
+            
             db.ref('tka_live/state').on('value', (snapshot) => {
                 const data = snapshot.val();
                 
                 if(!data || data.status === 'menunggu') {
-                    localStorage.removeItem('nama_siswa_ahe');
-                    localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
-                    localStorage.removeItem('index_soal_ahe');
+                    // RUANG TUNGGU: Biarkan anak anteng di sini, jangan di-logout!
+                    if (timerSiswa) { clearInterval(timerSiswa); timerSiswa = null; }
+                    ujianSelesai = false;
+                    
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('siswa-page').classList.remove('hidden');
                     
                     document.getElementById('area-tunggu').classList.remove('hidden');
                     document.getElementById('area-ujian').classList.add('hidden');
                     document.getElementById('area-selesai').classList.add('hidden');
-                    
-                    document.getElementById('login-page').classList.remove('hidden');
-                    document.getElementById('siswa-page').classList.add('hidden');
-                    document.getElementById('nama-siswa').value = "";
                     return;
                 }
 
                 if(data.status === 'jalan' && !ujianSelesai) {
+                    // Paksa tampilkan layar ujian bagaimanapun kondisi cache-nya
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('siswa-page').classList.remove('hidden');
+                    
                     document.getElementById('area-tunggu').classList.add('hidden');
                     document.getElementById('area-ujian').classList.remove('hidden');
+                    
                     if(!timerSiswa) {
                         mulaiTimerGlobal(data.endTime);
                         renderSoal(currentIndex);
