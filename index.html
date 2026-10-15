@@ -21,6 +21,8 @@
         .scroll-wacana::-webkit-scrollbar { width: 6px; }
         .scroll-wacana::-webkit-scrollbar-track { background: #fef3c7; border-radius: 4px; }
         .scroll-wacana::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 4px; }
+        
+        .waktu-habis { animation: pulse 1s infinite; background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
     </style>
     
     <script>
@@ -550,35 +552,41 @@
             let endTimeSiswa = localStorage.getItem('endtime_ahe_' + namaSiswaAktif);
             
             if (!endTimeSiswa) {
+                // Konversi 120 menit ke milidetik = 120 * 60 * 1000
                 endTimeSiswa = Date.now() + (menit * 60 * 1000);
                 localStorage.setItem('endtime_ahe_' + namaSiswaAktif, endTimeSiswa);
             } else {
                 endTimeSiswa = parseInt(endTimeSiswa);
             }
 
+            const timerElemen = document.getElementById('timer-display');
+
             timerSiswa = setInterval(() => {
                 const sisa = endTimeSiswa - Date.now();
                 if(sisa <= 0) {
                     // WAKTU HABIS
                     clearInterval(timerSiswa);
-                    document.getElementById('timer-display').innerText = "00:00:00";
+                    timerElemen.innerText = "00:00:00";
                     if(!ujianSelesai) {
                         simpanJawabanSaatIni();
                         koreksiOtomatis();
                     }
                 } else {
-                    const jam = Math.floor(sisa / 3600000);
-                    const mnt = Math.floor((sisa % 3600000) / 60000);
-                    const dtk = Math.floor((sisa % 60000) / 1000);
+                    // Konversi milidetik ke jam, menit, detik
+                    const totalDetik = Math.floor(sisa / 1000);
+                    const jam = Math.floor(totalDetik / 3600);
+                    const mnt = Math.floor((totalDetik % 3600) / 60);
+                    const dtk = totalDetik % 60;
                     
-                    let formatWaktu = "";
-                    if(jam > 0) {
-                        formatWaktu += (jam < 10 ? '0' : '') + jam + ':';
+                    let formatWaktu = `${jam.toString().padStart(2, '0')}:${mnt.toString().padStart(2, '0')}:${dtk.toString().padStart(2, '0')}`;
+                    timerElemen.innerText = formatWaktu;
+
+                    // Beri warna merah jika sisa waktu <= 3 menit (180 detik)
+                    if(totalDetik <= 180) {
+                        timerElemen.classList.add('waktu-habis');
+                    } else {
+                        timerElemen.classList.remove('waktu-habis');
                     }
-                    formatWaktu += (mnt < 10 ? '0' : '') + mnt + ':';
-                    formatWaktu += (dtk < 10 ? '0' : '') + dtk;
-                    
-                    document.getElementById('timer-display').innerText = formatWaktu;
                 }
             }, 1000);
         }
@@ -707,8 +715,15 @@
             document.getElementById('skor-angka').innerText = nilaiAkhir;
             document.getElementById('detail-skor').innerText = `Benar ${benar} dari ${total} soal`;
             
-            // Opsional: Hapus cache saat sudah selesai ujian agar bisa ujian ulang pakai nama lain
-            // localStorage.clear();
+            // Hapus cache agar siswa tidak otomatis masuk jika me-refresh halaman nilai
+            localStorage.removeItem('nama_siswa_ahe');
+            localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
+            localStorage.removeItem('index_soal_ahe');
+            localStorage.removeItem('endtime_ahe_' + namaSiswaAktif);
+        }
+
+        function keluarKeAwal() {
+            location.reload();
         }
     </script>
 </head>
@@ -731,7 +746,7 @@
             <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-2 z-10 border-b-2 border-blue-500">
                 <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm">Soal 1</span>
                 <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                    <span id="timer-display" class="text-lg font-black tabular-nums">00:00:00</span>
+                    <span id="timer-display" class="text-lg font-black tabular-nums">02:00:00</span>
                 </div>
             </div>
 
@@ -760,7 +775,7 @@
                     <p id="skor-angka" class="text-6xl font-black text-blue-600 mb-1">0</p>
                     <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-3 py-1 rounded-md shadow-sm text-sm">Benar 0 dari 0 soal</p>
                 </div>
-                <button onclick="window.location.reload()" class="mt-6 bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg text-sm">Kembali ke Awal</button>
+                <button onclick="keluarKeAwal()" class="mt-6 bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg text-sm">Kembali ke Awal</button>
             </div>
         </div>
     </div>
