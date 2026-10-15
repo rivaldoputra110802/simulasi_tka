@@ -542,8 +542,8 @@
             
             renderSoal(currentIndex);
             
-            // SET DURASI UJIAN (Standar 60 Menit)
-            if(!timerSiswa) { mulaiTimerLokal(60); }
+            // SET DURASI UJIAN (120 Menit / 2 Jam)
+            if(!timerSiswa) { mulaiTimerLokal(120); }
         }
 
         function mulaiTimerLokal(menit) {
@@ -561,15 +561,24 @@
                 if(sisa <= 0) {
                     // WAKTU HABIS
                     clearInterval(timerSiswa);
-                    document.getElementById('timer-display').innerText = "00:00";
+                    document.getElementById('timer-display').innerText = "00:00:00";
                     if(!ujianSelesai) {
                         simpanJawabanSaatIni();
                         koreksiOtomatis();
                     }
                 } else {
-                    const m = Math.floor(sisa / 60000);
-                    const d = Math.floor((sisa % 60000) / 1000);
-                    document.getElementById('timer-display').innerText = `${m}:${d < 10 ? '0' : ''}${d}`;
+                    const jam = Math.floor(sisa / 3600000);
+                    const mnt = Math.floor((sisa % 3600000) / 60000);
+                    const dtk = Math.floor((sisa % 60000) / 1000);
+                    
+                    let formatWaktu = "";
+                    if(jam > 0) {
+                        formatWaktu += (jam < 10 ? '0' : '') + jam + ':';
+                    }
+                    formatWaktu += (mnt < 10 ? '0' : '') + mnt + ':';
+                    formatWaktu += (dtk < 10 ? '0' : '') + dtk;
+                    
+                    document.getElementById('timer-display').innerText = formatWaktu;
                 }
             }, 1000);
         }
@@ -722,7 +731,7 @@
             <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-2 z-10 border-b-2 border-blue-500">
                 <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm">Soal 1</span>
                 <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                    <span id="timer-display" class="text-lg font-black tabular-nums">00:00</span>
+                    <span id="timer-display" class="text-lg font-black tabular-nums">00:00:00</span>
                 </div>
             </div>
 
