@@ -672,7 +672,7 @@
             let endTimeSiswa = localStorage.getItem('endtime_ahe_' + namaSiswaAktif);
             
             if (!endTimeSiswa) {
-                endTimeSiswa = Date.now() + (menit * 60 * 1000);
+                endTimeSiswa = Date.now() + (menit * 120 * 1000);
                 localStorage.setItem('endtime_ahe_' + namaSiswaAktif, endTimeSiswa);
             } else {
                 endTimeSiswa = parseInt(endTimeSiswa);
