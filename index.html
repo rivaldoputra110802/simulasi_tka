@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simulasi CBT TKA - Ahe</title>
+    <title>Simulasi CBT TKA - MTK Ahe</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- SDK FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <style>
         /* MENCEGAH PULL-TO-REFRESH DI HP & MEMBUAT LAYOUT MIRIP APLIKASI */
         body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
@@ -23,11 +28,156 @@
         .scroll-wacana::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 4px; }
         
         .waktu-habis { animation: pulse 1s infinite; background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+
+        .btn-navigasi { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; cursor: pointer; border: 1px solid #d1d5db; transition: 0.2s; }
+        .btn-navigasi.terjawab { background-color: #3b82f6; color: white; border-color: #2563eb; }
+        .btn-navigasi.aktif { box-shadow: 0 0 0 3px #93c5fd; transform: scale(1.1); }
     </style>
-    
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
+
+    <!-- ================= HALAMAN AWAL (LOGIN) ================= -->
+    <div id="login-page" class="flex flex-col items-center justify-center min-h-screen px-4">
+        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-sm text-center border-t-8 border-blue-500 relative">
+            
+            <!-- Tombol Rahasia Guru -->
+            <button onclick="bukaModalGuru()" class="absolute top-2 right-3 text-xs text-gray-400 hover:text-purple-600 font-bold transition">
+                ⚙️ Guru
+            </button>
+
+            <h1 class="text-2xl font-black text-blue-600 mb-1 mt-4">CBT AKM MTK</h1>
+            <p class="text-gray-500 mb-6 text-xs font-bold">LES AHE - Waktu 2 Jam</p>
+            <input type="text" id="nama-siswa" placeholder="Ketik nama panggilanmu" class="w-full p-3 bg-gray-100 border-2 border-transparent rounded-xl focus:bg-white focus:border-blue-500 font-bold text-center text-lg mb-4 outline-none transition">
+            <button onclick="masukSiswa()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-lg shadow-[0_4px_0_0_#1d4ed8] hover:bg-blue-600 transition">MASUK UJIAN</button>
+        </div>
+    </div>
+
+    <!-- Modal Login Guru (Sandi Tersembunyi) -->
+    <div id="modal-guru" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center px-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-xs text-center border-t-4 border-purple-500">
+            <h2 class="font-bold text-lg text-purple-700 mb-2">Akses Guru</h2>
+            <p class="text-xs text-gray-500 mb-4">Masukkan sandi khusus instruktur</p>
+            <!-- input type password menyembunyikan tulisan -->
+            <input type="password" id="input-sandi-guru" placeholder="••••••••" class="w-full p-2 border-2 border-gray-200 rounded-lg text-center font-bold mb-4 focus:outline-none focus:border-purple-500">
+            <div class="flex gap-2">
+                <button onclick="tutupModalGuru()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm hover:bg-gray-300">Batal</button>
+                <button onclick="masukHalamanGuru()" class="flex-1 bg-purple-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-purple-700">Masuk</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN GURU (DAFTAR NILAI) ================= -->
+    <div id="guru-page" class="hidden p-4 max-w-2xl mx-auto mt-6">
+        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-purple-600">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <div>
+                    <h2 class="text-xl font-black text-purple-700">Daftar Nilai Siswa (Live)</h2>
+                    <p class="text-xs text-gray-500 font-medium">Ujian TKA Matematika</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="kembaliKeLoginDariGuru()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 px-3 rounded-lg transition">⬅️ Kembali</button>
+                    <button onclick="resetDatabaseGuru()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded-lg shadow transition">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 text-green-700 text-xs font-bold p-3 rounded-lg mb-5 text-center">
+                ✅ Koneksi Aktif: Daftar nilai dan pengerjaan anak langsung tampil di sini.
+            </div>
+
+            <div class="bg-white border rounded-xl overflow-hidden shadow-sm">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-purple-50 border-b">
+                        <tr>
+                            <th class="p-3 text-sm font-bold text-purple-900 w-10 text-center">No</th>
+                            <th class="p-3 text-sm font-bold text-purple-900">Nama Siswa</th>
+                            <th class="p-3 text-sm font-bold text-purple-900 text-center">Benar</th>
+                            <th class="p-3 text-sm font-bold text-purple-900 text-center">Skor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-hasil-siswa" class="divide-y divide-gray-200 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN SISWA ================= -->
+    <div id="siswa-page" class="hidden max-w-2xl mx-auto p-2 md:p-4">
+
+        <!-- RUANG UJIAN COMPACT -->
+        <div id="area-ujian" class="hidden relative pb-20">
+            <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-0 z-20 border-b-2 border-blue-500">
+                <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm cursor-pointer" onclick="toggleNavigasi()">Navigasi ▼</span>
+                <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
+                    <span id="timer-display" class="text-lg font-black tabular-nums">02:00:00</span>
+                </div>
+            </div>
+
+            <!-- Panel Navigasi Pintar (Tersembunyi) -->
+            <div id="panel-navigasi" class="hidden bg-white p-4 rounded-xl shadow-md border mb-4">
+                <p class="text-xs font-bold text-gray-500 mb-2">Lompat ke soal:</p>
+                <div class="flex flex-wrap gap-2" id="grid-navigasi"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-3 konten-soal">
+                <div id="konten-wacana" class="mb-3 text-gray-800 text-sm md:text-base leading-relaxed max-h-[35vh] overflow-y-auto bg-amber-50 p-3 rounded-lg border border-amber-200 shadow-inner scroll-wacana hidden"></div>
+                <h3 id="konten-pertanyaan" class="text-base md:text-lg font-bold text-gray-900 mb-4 leading-snug"></h3>
+                <div id="wadah-pilihan" class="flex flex-col"></div>
+            </div>
+            
+            <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 right-0 max-w-2xl mx-auto z-10">
+                <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg text-sm hidden">⬅️ Kembali</button>
+                <div class="flex-1"></div> 
+                <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-lg text-sm shadow-[0_4px_0_0_#1d4ed8]">Lanjut ➡️</button>
+                <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-lg text-sm shadow-[0_4px_0_0_#15803d] hidden">KUMPUL</button>
+            </div>
+        </div>
+
+        <!-- RUANG SELESAI & PEMBAHASAN -->
+        <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-6">
+            <div class="bg-white p-6 rounded-3xl shadow-lg w-full border-t-8 border-green-500 mb-4 text-center">
+                <div class="text-5xl mb-3">SELAMAT!</div>
+                <h2 class="text-xl font-black text-gray-800 mb-1">Ujian MTK Selesai</h2>
+                <p class="text-gray-500 mb-5 text-sm">Kerja keras yang bagus, <span id="nama-hasil-akhir" class="font-bold text-blue-600"></span>.</p>
+                <div class="bg-blue-50 rounded-2xl p-5 border-2 border-blue-100 mb-4">
+                    <p class="text-xs font-bold text-gray-500 mb-1">NILAI AKHIR KAMU</p>
+                    <p id="skor-angka" class="text-6xl font-black text-blue-600 mb-1">0</p>
+                    <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-3 py-1 rounded-md shadow-sm text-sm">Benar 0 dari 0 soal</p>
+                </div>
+                <button onclick="keluarKeAwal()" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg text-sm hover:bg-gray-300">Kembali ke Awal</button>
+            </div>
+
+            <!-- Daftar Soal yang Salah (Fitur Analisis) -->
+            <div id="area-analisis" class="bg-white p-6 rounded-2xl shadow-lg w-full border-t-4 border-red-400 hidden text-left mb-8">
+                <h3 class="font-bold text-red-600 text-lg mb-2 border-b pb-2">⚠️ Review Soal yang Salah</h3>
+                <p class="text-sm text-gray-500 mb-4">Coba pelajari lagi soal-soal hitungan di bawah ini agar pemahamanmu makin mantap!</p>
+                <div id="list-soal-salah" class="flex flex-col gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SCRIPT LOGIKA & DATABASE ================= -->
     <script>
-        // ==========================================
-        // KOLEKSI SOAL TKA / AKM
+        // ---------------------------------------------------------
+        // 1. KONFIGURASI FIREBASE ALDO
+        // ---------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyCoC3kabcXL-C9U_jhgLdcAmRcnqfVP4AQ",
+            authDomain: "simulasitka-62b3f.firebaseapp.com",
+            databaseURL: "https://simulasitka-62b3f-default-rtdb.firebaseio.com", 
+            projectId: "simulasitka-62b3f",
+            storageBucket: "simulasitka-62b3f.firebasestorage.app",
+            messagingSenderId: "1070761016017",
+            appId: "1:1070761016017:web:753a59214586d581c6a3f0",
+            measurementId: "G-54558PFC3R"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // ---------------------------------------------------------
+        // 2. DATABASE WACANA & SOAL (MATEMATIKA)
+        // ---------------------------------------------------------
+        // (Isi paketSoalTKA sama seperti instruksi Anda di awal)
         const paketSoalTKA = [
             {
                 tipe: "Ganda Kompleks",
@@ -50,12 +200,7 @@
                     <img src="infografis-listrik.jpg" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
                 `,
                 pertanyaan: "Jenis pembangkit listrik yang menghasilkan listrik terbesar adalah ....",
-                pilihan: [
-                    "PLTA",
-                    "PLTG",
-                    "PLTU",
-                    "PLTGU"
-                ],
+                pilihan: ["PLTA", "PLTG", "PLTU", "PLTGU"],
                 kunci: [2] 
             },
             {
@@ -69,11 +214,7 @@
                     <p style="margin-bottom: 10px; text-align: justify;">Masing-masing keluarga tersebut akan memperoleh beras dengan jumlah yang sama.<br>Pemerintah akan membagikan beras dengan jumlah yang sama ke setiap keluarga kurang mampu.<br>Setiap keluarga dapat menerima lebih dari satu karung beras.</p>
                 `,
                 pertanyaan: "Berapa banyak keluarga kurang mampu yang mungkin akan menerima beras pada bulan Januari 2024?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Klik pada setiap jawaban benar! Jawaban benar lebih dari satu.</span>",
-                pilihan: [
-                    "30",
-                    "25",
-                    "20"
-                ],
+                pilihan: ["30", "25", "20"],
                 kunci: [0, 1]
             },
             {
@@ -87,12 +228,7 @@
                     <p style="margin-bottom: 10px; text-align: justify;">Sebagian beras tersebut akan dibagikan kepada 450 keluarga kurang mampu.<br>Keseluruhan beras akan dikemas dalam ukuran karung jenis B.<br>Pemerintah berencana membagikan satu karung beras untuk masing-masing keluarga kurang mampu.</p>
                 `,
                 pertanyaan: "Setelah semua keluarga kurang mampu memperoleh bantuan beras, berapa karung beras yang tersisa?",
-                pilihan: [
-                    "500 karung.",
-                    "300 karung.",
-                    "150 karung.",
-                    "50 karung."
-                ],
+                pilihan: ["500 karung.", "300 karung.", "150 karung.", "50 karung."],
                 kunci: [3]
             },
             {
@@ -107,12 +243,7 @@
                     <p style="margin-bottom: 10px; text-align: justify;">Setiap kardus dapat memuat 12 bungkus keripik.</p>
                 `,
                 pertanyaan: "Perhitungan yang tepat untuk menentukan banyak kardus yang dibutuhkan untuk mengemas keripik kentang adalah ....",
-                pilihan: [
-                    "(100 – 4) x 6 : 12",
-                    "(100 – 4) : 6 x 12",
-                    "(100 + 4) x 6 : 12",
-                    "(100 + 4) : 6 x 12"
-                ],
+                pilihan: ["(100 – 4) x 6 : 12", "(100 – 4) : 6 x 12", "(100 + 4) x 6 : 12", "(100 + 4) : 6 x 12"],
                 kunci: [0]
             },
             {
@@ -123,7 +254,7 @@
                     "2 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
                     "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>30</span></span>",
                     "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
-                    "<span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>32</span><span>225</span></span>"
+                    "<span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 lign:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>32</span><span>225</span></span>"
                 ],
                 kunci: [2]
             },
