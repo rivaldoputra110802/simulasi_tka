@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Simulasi CBT TKA - MTK Ahe</title>
+    <title>CBT Les Ahe - TKA Matematika</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- SDK FIREBASE -->
@@ -11,87 +11,71 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
     <style>
-        /* MENCEGAH PULL-TO-REFRESH DI HP & MEMBUAT LAYOUT MIRIP APLIKASI */
         body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-        
         .konten-soal table { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; font-size: 0.85em; }
         .konten-soal table, .konten-soal th, .konten-soal td { border: 1px solid #9ca3af; padding: 6px; text-align: left; }
-        
-        /* GAMBAR CERDAS: Maksimal 30% tinggi layar HP agar tidak mendorong pilihan ganda ke bawah */
-        .konten-soal img { max-width: 100%; max-height: 30vh; object-fit: contain; border-radius: 6px; margin: 0 auto 0.5rem auto; display: block; }
-        
+        .konten-soal img { max-width: 100%; max-height: 35vh; object-fit: contain; border-radius: 6px; margin: 0 auto 15px auto; display: block; }
         input[type="radio"], input[type="checkbox"] { transform: scale(1.3); accent-color: #2563eb; cursor: pointer; flex-shrink: 0; }
-        
-        /* SCROLLBAR CANTIK UNTUK WACANA */
-        .scroll-wacana::-webkit-scrollbar { width: 6px; }
-        .scroll-wacana::-webkit-scrollbar-track { background: #fef3c7; border-radius: 4px; }
-        .scroll-wacana::-webkit-scrollbar-thumb { background: #fcd34d; border-radius: 4px; }
-        
-        .waktu-habis { animation: pulse 1s infinite; background-color: #fef2f2; color: #dc2626; border-color: #fca5a5; }
-
-        .btn-navigasi { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; cursor: pointer; border: 1px solid #d1d5db; transition: 0.2s; }
-        .btn-navigasi.terjawab { background-color: #3b82f6; color: white; border-color: #2563eb; }
-        .btn-navigasi.aktif { box-shadow: 0 0 0 3px #93c5fd; transform: scale(1.1); }
+        .hidden { display: none !important; }
+        .waktu-habis { animation: pulse 1s infinite; background-color: #ef4444; color: white; border-color: #dc2626; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen">
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
 
-    <!-- ================= HALAMAN AWAL (LOGIN) ================= -->
-    <div id="login-page" class="flex flex-col items-center justify-center min-h-screen px-4">
-        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-sm text-center border-t-8 border-blue-500 relative">
+    <!-- ================= LAYAR LOGIN SISWA ================= -->
+    <div id="layar-login" class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border-t-4 border-blue-600">
+            <h1 class="text-2xl font-bold text-center text-blue-700 mb-2">Ujian TKA Matematika</h1>
+            <p class="text-center text-gray-500 mb-6">Waktu: 120 Menit (2 Jam)</p>
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">Nama Lengkap</label>
+                <input type="text" id="input-nama" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-center" placeholder="Ketik namamu di sini...">
+            </div>
+            <button onclick="mulaiUjian()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-md mb-4">Mulai Kerjakan</button>
             
-            <!-- Tombol Rahasia Guru -->
-            <button onclick="bukaModalGuru()" class="absolute top-2 right-3 text-xs text-gray-400 hover:text-purple-600 font-bold transition">
-                ⚙️ Guru
-            </button>
-
-            <h1 class="text-2xl font-black text-blue-600 mb-1 mt-4">CBT AKM MTK</h1>
-            <p class="text-gray-500 mb-6 text-xs font-bold">LES AHE - Waktu 2 Jam</p>
-            <input type="text" id="nama-siswa" placeholder="Ketik nama panggilanmu" class="w-full p-3 bg-gray-100 border-2 border-transparent rounded-xl focus:bg-white focus:border-blue-500 font-bold text-center text-lg mb-4 outline-none transition">
-            <button onclick="masukSiswa()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-lg shadow-[0_4px_0_0_#1d4ed8] hover:bg-blue-600 transition">MASUK UJIAN</button>
-        </div>
-    </div>
-
-    <!-- Modal Login Guru (Sandi Tersembunyi) -->
-    <div id="modal-guru" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center px-4 z-50">
-        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-xs text-center border-t-4 border-purple-500">
-            <h2 class="font-bold text-lg text-purple-700 mb-2">Akses Guru</h2>
-            <p class="text-xs text-gray-500 mb-4">Masukkan sandi khusus instruktur</p>
-            <!-- input type password menyembunyikan tulisan -->
-            <input type="password" id="input-sandi-guru" placeholder="••••••••" class="w-full p-2 border-2 border-gray-200 rounded-lg text-center font-bold mb-4 focus:outline-none focus:border-purple-500">
-            <div class="flex gap-2">
-                <button onclick="tutupModalGuru()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg text-sm hover:bg-gray-300">Batal</button>
-                <button onclick="masukHalamanGuru()" class="flex-1 bg-purple-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-purple-700">Masuk</button>
+            <div class="text-center border-t pt-4">
+                <button onclick="bukaModalGuru()" class="text-xs text-gray-400 hover:text-purple-600 underline font-semibold transition">Masuk sebagai Guru (Lihat Daftar Nilai)</button>
             </div>
         </div>
     </div>
 
-    <!-- ================= HALAMAN GURU (DAFTAR NILAI) ================= -->
-    <div id="guru-page" class="hidden p-4 max-w-2xl mx-auto mt-6">
+    <!-- Modal Sandi Guru (Disembunyikan) -->
+    <div id="modal-guru" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center px-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-xs text-center border-t-4 border-purple-500">
+            <h2 class="font-bold text-lg text-purple-700 mb-1">Akses Guru</h2>
+            <p class="text-xs text-gray-500 mb-4">Masukkan sandi khusus</p>
+            <!-- Input tipe password agar teks berubah jadi titik-titik (••••) -->
+            <input type="password" id="input-sandi-guru" placeholder="••••••••" class="w-full p-3 border rounded-lg text-center font-bold mb-4 focus:outline-none focus:border-purple-500 bg-gray-50">
+            <div class="flex gap-2">
+                <button onclick="tutupModalGuru()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300">Batal</button>
+                <button onclick="prosesMasukGuru()" class="flex-1 bg-purple-600 text-white font-bold py-2 rounded-lg hover:bg-purple-700">Masuk</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN GURU (DAFTAR NILAI LIVE) ================= -->
+    <div id="guru-page" class="hidden p-4 max-w-3xl mx-auto mt-6">
         <div class="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-purple-600">
-            <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 border-b pb-3 gap-3">
                 <div>
                     <h2 class="text-xl font-black text-purple-700">Daftar Nilai Siswa (Live)</h2>
-                    <p class="text-xs text-gray-500 font-medium">Ujian TKA Matematika</p>
+                    <p class="text-xs text-gray-500 font-medium">Ujian TKA Matematika (Otomatis)</p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="kembaliKeLoginDariGuru()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 px-3 rounded-lg transition">⬅️ Kembali</button>
-                    <button onclick="resetDatabaseGuru()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded-lg shadow transition">🔄 Reset</button>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button onclick="kembaliKeLoginDariGuru()" class="flex-1 md:flex-none bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg transition">⬅️ Kembali</button>
+                    <button onclick="resetDatabaseGuru()" class="flex-1 md:flex-none bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition">🔄 Reset Nilai</button>
                 </div>
             </div>
 
-            <div class="bg-green-50 border border-green-200 text-green-700 text-xs font-bold p-3 rounded-lg mb-5 text-center">
-                ✅ Koneksi Aktif: Daftar nilai dan pengerjaan anak langsung tampil di sini.
-            </div>
-
-            <div class="bg-white border rounded-xl overflow-hidden shadow-sm">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto bg-white border rounded-xl shadow-sm">
+                <table class="w-full text-left border-collapse min-w-max">
                     <thead class="bg-purple-50 border-b">
                         <tr>
                             <th class="p-3 text-sm font-bold text-purple-900 w-10 text-center">No</th>
                             <th class="p-3 text-sm font-bold text-purple-900">Nama Siswa</th>
                             <th class="p-3 text-sm font-bold text-purple-900 text-center">Benar</th>
                             <th class="p-3 text-sm font-bold text-purple-900 text-center">Skor</th>
+                            <th class="p-3 text-sm font-bold text-red-700">Nomor Soal yang Salah</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-hasil-siswa" class="divide-y divide-gray-200 text-sm"></tbody>
@@ -100,58 +84,40 @@
         </div>
     </div>
 
-    <!-- ================= HALAMAN SISWA ================= -->
-    <div id="siswa-page" class="hidden max-w-2xl mx-auto p-2 md:p-4">
+    <!-- ================= AREA UJIAN (CBT) ================= -->
+    <div id="area-ujian" class="hidden max-w-2xl mx-auto bg-white min-h-screen shadow-md relative pb-24">
+        <header class="bg-blue-600 text-white p-4 sticky top-0 z-10 shadow-md flex justify-between items-center gap-2">
+            <h1 class="font-bold text-base md:text-lg truncate" id="header-nama-siswa">TKA MTK</h1>
+            <div class="flex gap-2 items-center">
+                <span id="timer-display" class="bg-white text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-300 shadow-inner shrink-0 tabular-nums">02:00:00</span>
+                <span id="nomor-soal-display" class="bg-blue-800 px-3 py-1 rounded-full text-sm font-semibold border border-blue-500 shrink-0">1/20</span>
+            </div>
+        </header>
 
-        <!-- RUANG UJIAN COMPACT -->
-        <div id="area-ujian" class="hidden relative pb-20">
-            <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-0 z-20 border-b-2 border-blue-500">
-                <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm cursor-pointer" onclick="toggleNavigasi()">Navigasi ▼</span>
-                <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                    <span id="timer-display" class="text-lg font-black tabular-nums">02:00:00</span>
-                </div>
-            </div>
+        <main class="p-5 konten-soal">
+            <div id="konten-wacana" class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm md:text-base leading-relaxed hidden"></div>
+            <div id="konten-pertanyaan" class="font-bold text-gray-900 mb-5 text-base md:text-lg"></div>
+            <div id="wadah-pilihan" class="flex flex-col gap-3"></div>
+        </main>
 
-            <!-- Panel Navigasi Pintar (Tersembunyi) -->
-            <div id="panel-navigasi" class="hidden bg-white p-4 rounded-xl shadow-md border mb-4">
-                <p class="text-xs font-bold text-gray-500 mb-2">Lompat ke soal:</p>
-                <div class="flex flex-wrap gap-2" id="grid-navigasi"></div>
-            </div>
+        <footer class="fixed bottom-0 w-full max-w-2xl bg-white border-t border-gray-200 p-4 flex justify-between gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button id="btn-prev" onclick="gantiSoal(-1)" class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition hidden">Sebelumnya</button>
+            <button id="btn-next" onclick="gantiSoal(1)" class="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Selanjutnya</button>
+            <button id="btn-selesai" onclick="kumpulkanJawaban(false)" class="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition hidden">Selesai Ujian</button>
+        </footer>
+    </div>
 
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-3 konten-soal">
-                <div id="konten-wacana" class="mb-3 text-gray-800 text-sm md:text-base leading-relaxed max-h-[35vh] overflow-y-auto bg-amber-50 p-3 rounded-lg border border-amber-200 shadow-inner scroll-wacana hidden"></div>
-                <h3 id="konten-pertanyaan" class="text-base md:text-lg font-bold text-gray-900 mb-4 leading-snug"></h3>
-                <div id="wadah-pilihan" class="flex flex-col"></div>
+    <!-- ================= LAYAR HASIL ================= -->
+    <div id="layar-hasil" class="hidden flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border-t-4 border-green-500 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Ujian Selesai!</h2>
+            <p class="text-gray-600 mb-6">Kerja bagus, <span id="nama-hasil" class="font-bold text-blue-600"></span>.</p>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+                <p class="text-sm text-gray-500 font-semibold mb-1">NILAI AKHIR</p>
+                <p id="skor-akhir" class="text-6xl font-extrabold text-blue-600 mb-2">100</p>
+                <p id="detail-benar-akhir" class="text-sm text-gray-500 font-semibold bg-white inline-block px-3 py-1 rounded shadow-sm"></p>
             </div>
-            
-            <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 right-0 max-w-2xl mx-auto z-10">
-                <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg text-sm hidden">⬅️ Kembali</button>
-                <div class="flex-1"></div> 
-                <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-lg text-sm shadow-[0_4px_0_0_#1d4ed8]">Lanjut ➡️</button>
-                <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-lg text-sm shadow-[0_4px_0_0_#15803d] hidden">KUMPUL</button>
-            </div>
-        </div>
-
-        <!-- RUANG SELESAI & PEMBAHASAN -->
-        <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-6">
-            <div class="bg-white p-6 rounded-3xl shadow-lg w-full border-t-8 border-green-500 mb-4 text-center">
-                <div class="text-5xl mb-3">SELAMAT!</div>
-                <h2 class="text-xl font-black text-gray-800 mb-1">Ujian MTK Selesai</h2>
-                <p class="text-gray-500 mb-5 text-sm">Kerja keras yang bagus, <span id="nama-hasil-akhir" class="font-bold text-blue-600"></span>.</p>
-                <div class="bg-blue-50 rounded-2xl p-5 border-2 border-blue-100 mb-4">
-                    <p class="text-xs font-bold text-gray-500 mb-1">NILAI AKHIR KAMU</p>
-                    <p id="skor-angka" class="text-6xl font-black text-blue-600 mb-1">0</p>
-                    <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-3 py-1 rounded-md shadow-sm text-sm">Benar 0 dari 0 soal</p>
-                </div>
-                <button onclick="keluarKeAwal()" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg text-sm hover:bg-gray-300">Kembali ke Awal</button>
-            </div>
-
-            <!-- Daftar Soal yang Salah (Fitur Analisis) -->
-            <div id="area-analisis" class="bg-white p-6 rounded-2xl shadow-lg w-full border-t-4 border-red-400 hidden text-left mb-8">
-                <h3 class="font-bold text-red-600 text-lg mb-2 border-b pb-2">⚠️ Review Soal yang Salah</h3>
-                <p class="text-sm text-gray-500 mb-4">Coba pelajari lagi soal-soal hitungan di bawah ini agar pemahamanmu makin mantap!</p>
-                <div id="list-soal-salah" class="flex flex-col gap-4"></div>
-            </div>
+            <button onclick="keluarKeAwal()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition">Kembali ke Awal</button>
         </div>
     </div>
 
@@ -175,73 +141,40 @@
         const db = firebase.database();
 
         // ---------------------------------------------------------
-        // 2. DATABASE WACANA & SOAL (MATEMATIKA)
+        // 2. KUMPULAN SOAL MTK (Sesuai File Anda)
         // ---------------------------------------------------------
-        // (Isi paketSoalTKA sama seperti instruksi Anda di awal)
         const paketSoalTKA = [
             {
                 tipe: "Ganda Kompleks",
-                wacana: `
-                    <p style="margin-bottom: 10px; font-weight: 500;">Bangun datar berikut merupakan potongan yang terlihat mewakili bagian dari suatu objek utuh.</p>
-                    <img src="potongan.jpg" style="max-width: 120px; margin-bottom: 20px;">
-                `,
-                pertanyaan: "Manakah dari gambar berikut ini yang merupakan gambar objek utuh tersebut?<br><span style='font-size: 0.85em; color: #3b82f6; font-weight: normal;'>Centang gambar yang BENAR (Jawaban bisa lebih dari satu). Gambar yang salah biarkan kosong.</span>",
-                pilihan: [
-                    "<img src='opsi1.jpg' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='opsi2.jpg' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='opsi3.jpg' style='max-width: 250px; border-radius: 8px;'>"
-                ],
+                wacana: `<p style="margin-bottom: 10px; font-weight: 500;">Bangun datar berikut merupakan potongan yang terlihat mewakili bagian dari suatu objek utuh.</p><img src="potongan.jpg" style="max-width: 120px; margin-bottom: 20px;">`,
+                pertanyaan: "Manakah dari gambar berikut ini yang merupakan gambar objek utuh tersebut?<br><span style='font-size: 0.85em; color: #3b82f6; font-weight: normal;'>Centang gambar yang BENAR (Jawaban bisa lebih dari satu).</span>",
+                pilihan: ["<img src='opsi1.jpg' style='max-width: 200px;'>", "<img src='opsi2.jpg' style='max-width: 200px;'>", "<img src='opsi3.jpg' style='max-width: 200px;'>"],
                 kunci: [0, 2] 
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Tahukah kamu dari mana listrik berasal? Listrik berasal dari pembangkit listrik. Di Indonesia terdapat berbagai macam pembangkit listrik. Pembangkit listrik tersebut telah menghasilkan tenaga listrik sebanyak 40.000 megawatt. Berikut kapasitas listrik yang dihasilkan dari setiap pembangkit listrik:</p>
-                    <img src="infografis-listrik.jpg" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Tahukah kamu dari mana listrik berasal? Listrik berasal dari pembangkit listrik. Di Indonesia terdapat berbagai macam pembangkit listrik. Pembangkit listrik tersebut telah menghasilkan tenaga listrik sebanyak 40.000 megawatt. Berikut kapasitas listrik yang dihasilkan dari setiap pembangkit listrik:</p><img src="infografis-listrik.jpg">`,
                 pertanyaan: "Jenis pembangkit listrik yang menghasilkan listrik terbesar adalah ....",
                 pilihan: ["PLTA", "PLTG", "PLTU", "PLTGU"],
                 kunci: [2] 
             },
             {
                 tipe: "Ganda Kompleks",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Pemerintah suatu desa membuat program untuk memenuhi kebutuhan pokok warganya.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Pemerintah desa tersebut akan memberikan bantuan berupa beras kepada warga setempat.<br>Bantuan ini diberikan untuk keluarga kurang mampu.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Sebelum dibagikan, beras tersebut dimasukkan ke dalam karung-karung dengan ukuran yang sama.<br>Pemerintah desa hanya dapat menggunakan salah satu jenis karung berikut.</p>
-                    <img src="karung-beras.jpg" style="max-width: 300px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Pada bulan Januari 2024, terdapat 150 karung beras yang akan dibagikan ke beberapa keluarga kurang mampu.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Masing-masing keluarga tersebut akan memperoleh beras dengan jumlah yang sama.<br>Pemerintah akan membagikan beras dengan jumlah yang sama ke setiap keluarga kurang mampu.<br>Setiap keluarga dapat menerima lebih dari satu karung beras.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Pemerintah suatu desa membuat program untuk memenuhi kebutuhan pokok warganya.</p><p style="margin-bottom: 10px; text-align: justify;">Pemerintah desa tersebut akan memberikan bantuan berupa beras kepada warga setempat.<br>Bantuan ini diberikan untuk keluarga kurang mampu.</p><p style="margin-bottom: 10px; text-align: justify;">Sebelum dibagikan, beras tersebut dimasukkan ke dalam karung-karung dengan ukuran yang sama.<br>Pemerintah desa hanya dapat menggunakan salah satu jenis karung berikut.</p><img src="karung-beras.jpg" style="max-width: 300px;"><p style="margin-bottom: 10px; text-align: justify;">Pada bulan Januari 2024, terdapat 150 karung beras yang akan dibagikan ke beberapa keluarga kurang mampu.</p><p style="margin-bottom: 10px; text-align: justify;">Masing-masing keluarga tersebut akan memperoleh beras dengan jumlah yang sama.<br>Pemerintah akan membagikan beras dengan jumlah yang sama ke setiap keluarga kurang mampu.<br>Setiap keluarga dapat menerima lebih dari satu karung beras.</p>`,
                 pertanyaan: "Berapa banyak keluarga kurang mampu yang mungkin akan menerima beras pada bulan Januari 2024?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Klik pada setiap jawaban benar! Jawaban benar lebih dari satu.</span>",
                 pilihan: ["30", "25", "20"],
                 kunci: [0, 1]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Pemerintah suatu desa membuat program untuk memenuhi kebutuhan pokok warganya.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Pemerintah desa tersebut akan memberikan bantuan berupa beras kepada warga setempat.<br>Bantuan ini diberikan untuk keluarga kurang mampu.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Sebelum dibagikan, beras tersebut dimasukkan ke dalam karung-karung dengan ukuran yang sama.<br>Pemerintah desa hanya dapat menggunakan salah satu jenis karung berikut.</p>
-                    <img src="karung-beras.jpg" style="max-width: 300px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Pada bulan Juli 2024, pemerintah hanya memiliki persediaan beras sebanyak 1.500 kg.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Sebagian beras tersebut akan dibagikan kepada 450 keluarga kurang mampu.<br>Keseluruhan beras akan dikemas dalam ukuran karung jenis B.<br>Pemerintah berencana membagikan satu karung beras untuk masing-masing keluarga kurang mampu.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Pemerintah suatu desa membuat program untuk memenuhi kebutuhan pokok warganya.</p><p style="margin-bottom: 10px; text-align: justify;">Pemerintah desa tersebut akan memberikan bantuan berupa beras kepada warga setempat.<br>Bantuan ini diberikan untuk keluarga kurang mampu.</p><p style="margin-bottom: 10px; text-align: justify;">Sebelum dibagikan, beras tersebut dimasukkan ke dalam karung-karung dengan ukuran yang sama.<br>Pemerintah desa hanya dapat menggunakan salah satu jenis karung berikut.</p><img src="karung-beras.jpg" style="max-width: 300px;"><p style="margin-bottom: 10px; text-align: justify;">Pada bulan Juli 2024, pemerintah hanya memiliki persediaan beras sebanyak 1.500 kg.</p><p style="margin-bottom: 10px; text-align: justify;">Sebagian beras tersebut akan dibagikan kepada 450 keluarga kurang mampu.<br>Keseluruhan beras akan dikemas dalam ukuran karung jenis B.<br>Pemerintah berencana membagikan satu karung beras untuk masing-masing keluarga kurang mampu.</p>`,
                 pertanyaan: "Setelah semua keluarga kurang mampu memperoleh bantuan beras, berapa karung beras yang tersisa?",
                 pilihan: ["500 karung.", "300 karung.", "150 karung.", "50 karung."],
                 kunci: [3]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Sebuah pabrik <i>home industry</i> memproduksi keripik kentang.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Kentang mentah disimpan dalam karung sebagai berikut.</p>
-                    <img src="karung-kentang.jpg" style="max-width: 200px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Dari satu karung kentang telah dibuat sejumlah keripik dan masih tersisa 4 kg.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Setiap 1 kg kentang dapat dibuat menjadi 6 bungkus keripik.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Keripik yang sudah jadi dimasukkan ke dalam kardus.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Setiap kardus dapat memuat 12 bungkus keripik.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Sebuah pabrik <i>home industry</i> memproduksi keripik kentang.</p><p style="margin-bottom: 10px; text-align: justify;">Kentang mentah disimpan dalam karung sebagai berikut.</p><img src="karung-kentang.jpg" style="max-width: 200px;"><p style="margin-bottom: 10px; text-align: justify;">Dari satu karung kentang telah dibuat sejumlah keripik dan masih tersisa 4 kg.</p><p style="margin-bottom: 10px; text-align: justify;">Setiap 1 kg kentang dapat dibuat menjadi 6 bungkus keripik.</p><p style="margin-bottom: 10px; text-align: justify;">Keripik yang sudah jadi dimasukkan ke dalam kardus.</p><p style="margin-bottom: 10px; text-align: justify;">Setiap kardus dapat memuat 12 bungkus keripik.</p>`,
                 pertanyaan: "Perhitungan yang tepat untuk menentukan banyak kardus yang dibutuhkan untuk mengemas keripik kentang adalah ....",
                 pilihan: ["(100 – 4) x 6 : 12", "(100 – 4) : 6 x 12", "(100 + 4) x 6 : 12", "(100 + 4) : 6 x 12"],
                 kunci: [0]
@@ -254,16 +187,13 @@
                     "2 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
                     "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>30</span></span>",
                     "9 <span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>1</span><span>2</span></span>",
-                    "<span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 lign:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>32</span><span>225</span></span>"
+                    "<span style='display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.1; font-size:0.9em; margin:0 2px;'><span style='border-bottom:1px solid; width:100%; text-align:center;'>32</span><span>225</span></span>"
                 ],
                 kunci: [2]
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Sebuah program memiliki proses berpikir sebagai berikut:</p>
-                    <img src="flowchart-program.jpg" style="max-width: 250px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Sebuah program memiliki proses berpikir sebagai berikut:</p><img src="flowchart-program.jpg" style="max-width: 250px;">`,
                 pertanyaan: "Tentukan Benar atau Salah pada setiap pernyataan berikut berdasarkan program tersebut!",
                 pilihan: [
                     "Jika bilangan yang dimasukkan adalah bilangan ganjil, maka hasil akhir juga bilangan ganjil.",
@@ -274,336 +204,161 @@
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; font-weight: bold; text-align: justify;">Tahukah kamu bahwa tidak semua benda dapat ditarik magnet?</p>
-                    <img src="magnet.png" style="max-width: 250px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 6px; text-align: justify;">Feromagnetik adalah benda yang mudah ditarik magnet.</p>
-                    <p style="margin-bottom: 6px; text-align: justify;">Paramagnetik adalah benda yang lemah ditarik magnet.</p>
-                    <p style="margin-bottom: 12px; text-align: justify;">Diamagnetik adalah benda yang sulit ditarik magnet.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Di dalam suatu wadah, terdapat 25 benda yang berbeda jenisnya. Satu persatu benda tersebut akan dicoba didekati magnet. Ternyata 12 diantaranya termasuk feromagnetik dan 7 lainnya termasuk paramagnetik. Sisanya adalah benda diamagnetik. Setelah itu, benda tersebut ditambah sehingga menjadi 9 benda diamagnetik.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; font-weight: bold; text-align: justify;">Tahukah kamu bahwa tidak semua benda dapat ditarik magnet?</p><img src="magnet.png" style="max-width: 250px;"><p style="margin-bottom: 6px; text-align: justify;">Feromagnetik adalah benda yang mudah ditarik magnet.</p><p style="margin-bottom: 6px; text-align: justify;">Paramagnetik adalah benda yang lemah ditarik magnet.</p><p style="margin-bottom: 12px; text-align: justify;">Diamagnetik adalah benda yang sulit ditarik magnet.</p><p style="margin-bottom: 10px; text-align: justify;">Di dalam suatu wadah, terdapat 25 benda yang berbeda jenisnya. Satu persatu benda tersebut akan dicoba didekati magnet. Ternyata 12 diantaranya termasuk feromagnetik dan 7 lainnya termasuk paramagnetik. Sisanya adalah benda diamagnetik. Setelah itu, benda tersebut ditambah sehingga menjadi 9 benda diamagnetik.</p>`,
                 pertanyaan: "Berapakah benda diamagnetik yang baru ditambahkan?",
-                pilihan: [
-                    "3 benda.",
-                    "5 benda.",
-                    "9 benda.",
-                    "15 benda."
-                ],
+                pilihan: ["3 benda.", "5 benda.", "9 benda.", "15 benda."],
                 kunci: [0]
             },
             {
                 tipe: "Ganda Kompleks",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Listrik saat ini menjadi kebutuhan utama bagi kehidupan masyarakat. Salah satu cara yang biasa digunakan untuk mendapat akses listrik adalah dengan menggunakan pembangkit listrik tenaga air.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Di suatu desa, terdapat tiga buah kincir air yang sedang digunakan untuk memenuhi kebutuhan listrik di desa tersebut, yaitu kincir A, B, dan C. Besar daya listrik yang dihasilkan oleh masing-masing kincir setiap harinya dapat dilihat pada gambar berikut.</p>
-                    <img src="kincir-air.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Listrik yang dihasilkan akan disimpan di dalam baterai penyimpan sebelum nantinya digunakan. Ketiga kincir tersebut coba digunakan selama dua hari. Setelah itu, daya listrik dan sisa daya yang digunakan oleh warga desa dicatat. Sisa daya listrik dari kincir A 42 watt, kincir B 13 watt, dan kincir C 30 watt.</p>
-                `,
-                pertanyaan: "Berdasarkan penggunaan daya listrik masyarakat, daya listrik dari kincir mana saja yang telah digunakan warga desa lebih dari 150 watt?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban yang benar! Jawaban benar lebih dari satu.</span>",
-                pilihan: [
-                    "Kincir A",
-                    "Kincir B",
-                    "Kincir C"
-                ],
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Listrik saat ini menjadi kebutuhan utama bagi kehidupan masyarakat. Salah satu cara yang biasa digunakan untuk mendapat akses listrik adalah dengan menggunakan pembangkit listrik tenaga air.</p><p style="margin-bottom: 10px; text-align: justify;">Di suatu desa, terdapat tiga buah kincir air yang sedang digunakan untuk memenuhi kebutuhan listrik di desa tersebut, yaitu kincir A, B, dan C. Besar daya listrik yang dihasilkan oleh masing-masing kincir setiap harinya dapat dilihat pada gambar berikut.</p><img src="kincir-air.jpg"><p style="margin-bottom: 10px; text-align: justify;">Listrik yang dihasilkan akan disimpan di dalam baterai penyimpan sebelum nantinya digunakan. Ketiga kincir tersebut coba digunakan selama dua hari. Setelah itu, daya listrik dan sisa daya yang digunakan oleh warga desa dicatat. Sisa daya listrik dari kincir A 42 watt, kincir B 13 watt, dan kincir C 30 watt.</p>`,
+                pertanyaan: "Berdasarkan penggunaan daya listrik masyarakat, daya listrik dari kincir mana saja yang telah digunakan warga desa lebih dari 150 watt?",
+                pilihan: ["Kincir A", "Kincir B", "Kincir C"],
                 kunci: [1, 2]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Ikan salmon merupakan salah satu ikan yang memiliki banyak kandungan bergizi.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Berikut ini informasi terkait manfaat mengkonsumsi ikan salmon.</p>
-                    <img src="infografis-salmon.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Ikan salmon merupakan salah satu ikan yang memiliki banyak kandungan bergizi.</p><p style="margin-bottom: 10px; text-align: justify;">Berikut ini informasi terkait manfaat mengkonsumsi ikan salmon.</p><img src="infografis-salmon.jpg">`,
                 pertanyaan: "Jika dalam satu sajian ikan salmon terdapat 80 gram protein, berapa porsi salmon yang disajikan dalam sajian tersebut?",
-                pilihan: [
-                    "8 porsi.",
-                    "6 porsi.",
-                    "4 porsi.",
-                    "2 porsi."
-                ],
+                pilihan: ["8 porsi.", "6 porsi.", "4 porsi.", "2 porsi."],
                 kunci: [2]
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Keju adalah salah satu produk olahan susu yang memiliki kandungan protein yang tinggi.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Keju dibuat melalui proses koagulasi atau pengentalan susu sapi segar yang bertujuan untuk memindahkan zat-zat padat dalam susu. Proses selanjutnya adalah flokulasi atau penggumpalan protein dalam susu serta 90% lemak susu.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Proses pembuatan keju sederhana dapat dilakukan sendiri dengan menggunakan bahan-bahan sebagai berikut.</p>
-                    <img src="bahan-keju.jpg" style="max-width: 100%; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Penggunaan cuka akan membantu mengendapkan protein sehingga terbentuk gumpalan. Sementara itu, penambahan garam bertujuan untuk menurunkan kadar air sekaligus sebagai pengawet.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Berikut merupakan proses pembuatan keju sederhana dari susu segar.</p>
-                    <img src="proses-keju.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
-                        <p style="margin-bottom: 8px; font-weight: bold; color: #334155;">Setelah dihitung, ternyata setiap satu resep pembuatan keju dibutuhkan garam sebanyak 4 gr.</p>
-                        <p style="margin-bottom: 8px; color: #475569; text-align: justify;">Seseorang akan membuat keju sebanyak 5 kali resep awal. Persediaan bahan yang dimiliki orang tersebut adalah 2.000 ml susu sapi segar, 140 ml cuka, dan 16 gr garam.</p>
-                        <p style="font-weight: bold; color: #0f172a;">Apakah bahan yang tersedia cukup?</p>
-                    </div>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Keju adalah salah satu produk olahan susu yang memiliki kandungan protein yang tinggi.</p><p style="margin-bottom: 10px; text-align: justify;">Keju dibuat melalui proses koagulasi atau pengentalan susu sapi segar yang bertujuan untuk memindahkan zat-zat padat dalam susu. Proses selanjutnya adalah flokulasi atau penggumpalan protein dalam susu serta 90% lemak susu.</p><p style="margin-bottom: 10px; text-align: justify;">Proses pembuatan keju sederhana dapat dilakukan sendiri dengan menggunakan bahan-bahan sebagai berikut.</p><img src="bahan-keju.jpg"><p style="margin-bottom: 10px; text-align: justify;">Penggunaan cuka akan membantu mengendapkan protein sehingga terbentuk gumpalan. Sementara itu, penambahan garam bertujuan untuk menurunkan kadar air sekaligus sebagai pengawet.</p><p style="margin-bottom: 10px; text-align: justify;">Berikut merupakan proses pembuatan keju sederhana dari susu segar.</p><img src="proses-keju.jpg"><div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;"><p style="margin-bottom: 8px; font-weight: bold; color: #334155;">Setelah dihitung, ternyata setiap satu resep pembuatan keju dibutuhkan garam sebanyak 4 gr.</p><p style="margin-bottom: 8px; color: #475569; text-align: justify;">Seseorang akan membuat keju sebanyak 5 kali resep awal. Persediaan bahan yang dimiliki orang tersebut adalah 2.000 ml susu sapi segar, 140 ml cuka, dan 16 gr garam.</p><p style="font-weight: bold; color: #0f172a;">Apakah bahan yang tersedia cukup?</p></div>`,
                 pertanyaan: "Tentukan Benar atau Salah untuk setiap pernyataan berikut!",
-                pilihan: [
-                    "Seharusnya disediakan garam sebanyak 20 gr.",
-                    "Terdapat kekurangan cuka sebanyak 40 ml.",
-                    "Tidak perlu tambahan susu sapi segar."
-                ],
+                pilihan: ["Seharusnya disediakan garam sebanyak 20 gr.", "Terdapat kekurangan cuka sebanyak 40 ml.", "Tidak perlu tambahan susu sapi segar."],
                 kunci: ["0_B", "1_S", "2_B"]
             },
             {
                 tipe: "Ganda Kompleks",
-                wacana: `
-                    <p style="margin-bottom: 10px; font-weight: bold; text-align: center;"><i>Laundry</i> Koin</p>
-                    <p style="margin-bottom: 10px; text-align: justify;"><i>Laundry</i> koin adalah tempat mencuci pakaian yang sangat mudah digunakan. Di sini, kita tidak perlu mencuci baju sendiri di rumah. Kita hanya perlu membawa baju kotor ke laundry koin. Di tempat ini, ada mesin cuci besar yang bisa digunakan oleh siapa saja.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Linda dan Vidya mencuci baju kotor mereka di tempat <i>laundry</i> koin yang sama. Mereka memiliki jadwal berbeda untuk pergi ke <i>laundry</i> koin. Akan tetapi, keduanya memiliki jam kedatangan yang sama yaitu sekitar pukul 16.00. Perhatikan gambar berikut ini.</p>
-                    <img src="laundry-koin.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                `,
-                pertanyaan: "Pada tanggal 10 Agustus 2024, Linda dan Vidya bertemu di tempat <i>laundry</i> tersebut. Kapankah mereka akan bertemu kembali?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban benar! Jawaban benar lebih dari satu.</span>",
-                pilihan: [
-                    "3 September 2024",
-                    "27 September 2024",
-                    "21 October 2024"
-                ],
+                wacana: `<p style="margin-bottom: 10px; font-weight: bold; text-align: center;"><i>Laundry</i> Koin</p><p style="margin-bottom: 10px; text-align: justify;"><i>Laundry</i> koin adalah tempat mencuci pakaian yang sangat mudah digunakan. Di sini, kita tidak perlu mencuci baju sendiri di rumah. Kita hanya perlu membawa baju kotor ke laundry koin. Di tempat ini, ada mesin cuci besar yang bisa digunakan oleh siapa saja.</p><p style="margin-bottom: 10px; text-align: justify;">Linda dan Vidya mencuci baju kotor mereka di tempat <i>laundry</i> koin yang sama. Mereka memiliki jadwal berbeda untuk pergi ke <i>laundry</i> koin. Akan tetapi, keduanya memiliki jam kedatangan yang sama yaitu sekitar pukul 16.00. Perhatikan gambar berikut ini.</p><img src="laundry-koin.jpg">`,
+                pertanyaan: "Pada tanggal 10 Agustus 2024, Linda dan Vidya bertemu di tempat <i>laundry</i> tersebut. Kapankah mereka akan bertemu kembali?",
+                pilihan: ["3 September 2024", "27 September 2024", "21 October 2024"],
                 kunci: [0, 1, 2]
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Perajin kayu sedang membuat hiasan dinding berbentuk huruf berikut.</p>
-                    <img src="huruf-e.jpg" style="max-width: 150px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Bentuk huruf tersebut dianggap menjadi satu bidang datar.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Perajin kayu sedang membuat hiasan dinding berbentuk huruf berikut.</p><img src="huruf-e.jpg" style="max-width: 150px;"><p style="margin-bottom: 10px; text-align: justify;">Bentuk huruf tersebut dianggap menjadi satu bidang datar.</p>`,
                 pertanyaan: "Bagaimanakah ciri-ciri hiasan dinding tersebut?",
-                pilihan: [
-                    "Memiliki 12 sisi.",
-                    "Terdapat 12 titik sudut.",
-                    "Terdapat 10 sudut siku-siku."
-                ],
+                pilihan: ["Memiliki 12 sisi.", "Terdapat 12 titik sudut.", "Terdapat 10 sudut siku-siku."],
                 kunci: ["0_B", "1_B", "2_S"]
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan sebuah segi banyak yang dibentuk dari gabungan beberapa bangun datar tanpa beririsan.</p>
-                    <img src="segi-banyak.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Berikut ini adalah pernyataan banyak segitiga dan segiempat yang menyusun segi banyak tersebut.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan sebuah segi banyak yang dibentuk dari gabungan beberapa bangun datar tanpa beririsan.</p><img src="segi-banyak.png"><p style="margin-bottom: 10px; text-align: justify;">Berikut ini adalah pernyataan banyak segitiga dan segiempat yang menyusun segi banyak tersebut.</p>`,
                 pertanyaan: "Tentukan Benar atau Salah pada setiap pernyataan berikut!",
-                pilihan: [
-                    "3 segitiga dan 1 persegi panjang.",
-                    "4 segitiga dan 1 trapesium.",
-                    "5 segitiga dan 1 layang-layang."
-                ],
+                pilihan: ["3 segitiga dan 1 persegi panjang.", "4 segitiga dan 1 trapesium.", "5 segitiga dan 1 layang-layang."],
                 kunci: ["0_B", "1_B", "2_S"]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan susunan kubus berukuran sama.</p>
-                    <img src="susunan-kubus.png" style="max-width: 220px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Gambar berikut memperlihatkan susunan kubus berukuran sama.</p><img src="susunan-kubus.png" style="max-width: 220px;">`,
                 pertanyaan: "Berdasarkan gambar tersebut, jumlah semua kubus yang mungkin adalah ....",
-                pilihan: [
-                    "12",
-                    "13",
-                    "14",
-                    "15"
-                ],
+                pilihan: ["12", "13", "14", "15"],
                 kunci: [3]
             },
             {
                 tipe: "Ganda Kompleks",
                 wacana: "",
-                pertanyaan: "Berikut ini, manakah yang menunjukkan hasil pengukuran yang paling tepat dan masuk akal?<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban benar! Jawaban benar lebih dari satu.</span>",
-                pilihan: [
-                    "Tinggi tiang bendera di sekolah adalah 8 meter.",
-                    "Jarak rumah Budi ke sekolah adalah 30 milimeter.",
-                    "Lebar buku tulis ini sekitar 20 centimeter."
-                ],
+                pertanyaan: "Berikut ini, manakah yang menunjukkan hasil pengukuran yang paling tepat dan masuk akal?",
+                pilihan: ["Tinggi tiang bendera di sekolah adalah 8 meter.", "Jarak rumah Budi ke sekolah adalah 30 milimeter.", "Lebar buku tulis ini sekitar 20 centimeter."],
                 kunci: [0, 2]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Sepulang sekolah, Dewi dan temannya bermain air warna-warni yang dimasukkan dalam botol. Ukuran dan bentuk botol yang digunakan sama.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Botol A diisi air berwarna merah sebanyak 450 ml, botol B diisi air berwarna hijau sebanyak 530 ml, botol C diisi air berwarna kuning sebanyak 540 ml dan botol d diisi air berwarna biru sebanyak 470 ml.</p>
-            
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Sepulang sekolah, Dewi dan temannya bermain air warna-warni yang dimasukkan dalam botol. Ukuran dan bentuk botol yang digunakan sama.</p><p style="margin-bottom: 10px; text-align: justify;">Botol A diisi air berwarna merah sebanyak 450 ml, botol B diisi air berwarna hijau sebanyak 530 ml, botol C diisi air berwarna kuning sebanyak 540 ml dan botol d diisi air berwarna biru sebanyak 470 ml.</p>`,
                 pertanyaan: "Manakah gambar yang tepat menunjukkan tinggi permukaan air berwarna di setiap botol?",
                 pilihan: [
-                    "<img src='17opsia.png' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='17opsib.png' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='17opsic.png' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='17opsid.png' style='max-width: 250px; border-radius: 8px;'>"
+                    "<img src='17opsia.png' style='max-width: 200px;'>",
+                    "<img src='17opsib.png' style='max-width: 200px;'>",
+                    "<img src='17opsic.png' style='max-width: 200px;'>",
+                    "<img src='17opsid.png' style='max-width: 200px;'>"
                 ],
                 kunci: [1] 
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Bu Halimah berjualan jajanan cireng isi ayam suwir pedas. Bahan-bahan yang ia gunakan untuk membut cireng adalah sebagai berikut.</p>
-                    <img src="bahan-cireng.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Bagaimana hubungan berat bahan-bahan tersebut jika ditimbang menggunakan neraca?</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Bu Halimah berjualan jajanan cireng isi ayam suwir pedas. Bahan-bahan yang ia gunakan untuk membut cireng adalah sebagai berikut.</p><img src="bahan-cireng.png"><p style="margin-bottom: 10px; text-align: justify;">Bagaimana hubungan berat bahan-bahan tersebut jika ditimbang menggunakan neraca?</p>`,
                 pertanyaan: "Tentukan Benar atau Salah pada setiap pernyataan berikut!",
                 pilihan: [
-                    "<img src='18opsi1.png' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='18opsi2.png' style='max-width: 250px; border-radius: 8px;'>",
-                    "<img src='18opsi3.png' style='max-width: 250px; border-radius: 8px;'>"
+                    "<img src='18opsi1.png' style='max-width: 200px; display:inline;'>",
+                    "<img src='18opsi2.png' style='max-width: 200px; display:inline;'>",
+                    "<img src='18opsi3.png' style='max-width: 200px; display:inline;'>"
                 ],
                 kunci: ["0_B", "1_S", "2_B"]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Bu Nina memasak beberapa jenis makanan untuk keluarganya yang akan berkunjung dari luar kota. Waktu memulai dan selesai masak ditunjukkan seperti pada gambar jam berikut ini.</p>
-                    <img src="soal19.png" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Bu Nina memasak beberapa jenis makanan untuk keluarganya yang akan berkunjung dari luar kota. Waktu memulai dan selesai masak ditunjukkan seperti pada gambar jam berikut ini.</p><img src="soal19.png">`,
                 pertanyaan: "Berapa lama Bu Nina memasak makanan tersebut?",
-                pilihan: [
-                    "2 jam 10 menit",
-                    "2 jam 40 menit",
-                    "3 jam 10 menit",
-                    "3 jam 40 menit"
-                ],
+                pilihan: ["2 jam 10 menit", "2 jam 40 menit", "3 jam 10 menit", "3 jam 40 menit"],
                 kunci: [0] 
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Segi banyak tersebut tersusun dari beberapa segitiga yang berukuran sama.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut ini memperlihatkan kenampakan bangun segi banyak tersebut</p>
-                    <img src="soal21.png" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Segi banyak tersebut tersusun dari beberapa segitiga yang berukuran sama.</p><p style="margin-bottom: 10px; text-align: justify;">Gambar berikut ini memperlihatkan kenampakan bangun segi banyak tersebut</p><img src="soal21.png">`,
                 pertanyaan: "Berapakah luas segi banyak tersebut?",
-                pilihan: [
-                    "176 cm2",
-                    "160 cm2",
-                    "144 cm2",
-                    "128 cm2"
-                ],
+                pilihan: ["176 cm2", "160 cm2", "144 cm2", "128 cm2"],
                 kunci: [1] 
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Gambar berikut menunjukkan sketsa bangun datar beserta ukurannya.</p>
-                    <img src="soal20.png" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Gambar berikut menunjukkan sketsa bangun datar beserta ukurannya.</p><img src="soal20.png">`,
                 pertanyaan: "keliling bangun tersebut adalah ...",
-                pilihan: [
-                    "46 cm",
-                    "50 cm",
-                    "56 cm",
-                    "60 cm"
-                ],
+                pilihan: ["46 cm", "50 cm", "56 cm", "60 cm"],
                 kunci: [3] 
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Jimmy merupakan anak yang sangat menyukai lukisan. Suatu hari, ia diajak orangtuanya untuk melihat pameran lukisan yang sedang diadakan di kotanya. Jimmy sangat tertarik pada suatu dinding yang terpajang 5 lukisan bertema binatang seperti pada gambar.</p>
-                    <img src="soal22.png" style="width: 100%; max-width: 600px; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Jimmy merupakan anak yang sangat menyukai lukisan. Suatu hari, ia diajak orangtuanya untuk melihat pameran lukisan yang sedang diadakan di kotanya. Jimmy sangat tertarik pada suatu dinding yang terpajang 5 lukisan bertema binatang seperti pada gambar.</p><img src="soal22.png">`,
                 pertanyaan: "Jimmy ingin membeli lukisan untuk dipajang di rumahnya. Ia menyediakan tempat di kamarnya dengan luas 4.800 cm2. Lukisan manakah yang bisa dipajang Jimmi?",
-                pilihan: [
-                    "Lukisan A dan Lukisan B",
-                    "Lukisan C dan Lukisan D",
-                    "Lukisan E dan A",
-                    "Lukisan B dan Lukisan D"
-                ],
+                pilihan: ["Lukisan A dan Lukisan B", "Lukisan C dan Lukisan D", "Lukisan E dan A", "Lukisan B dan Lukisan D"],
                 kunci: [1] 
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Desa makmur salah satu desa yang terkenal dengan pembuat kerajinan dari kain perca. Kain perca adalah kain sisa yang sudah tidak digunakan. Hal ini disebabkan di Desa Makmur terdapat industri konveksi (perusahaan pakaian). Kain-kain sisa produksi tersebut dimanfaatkan oleh warga Desa Makmur untuk membuat kerajinan. Salah satu produk yang dihasilkan adalah keset. keset buatan warga desa Makmur sudah terjual di berbagai daerah di Indonesia.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Keset yang diproduksi terdapat tiga jenis. Berikut adalah bentuk, panjang, dan berat masing-masing jenis keset produksi Desa Makmur.</p>
-                    <img src="soal24.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">keset-keset ini akan dikirim ke berbagai daerah di Indonesia. Keset dikemas dalam sebuah kardus. Di dalam satu kardus, ada dua jenis keset yang berbeda. banyak keset pada setiap kardus akan dimaksimalkan namun total berat tidak boleh melebihi 10 kg.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Berapa banyak keset yang sebaiknya dimasukkan ke dalam kardus?</p>
-                `   
-                ,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Desa makmur salah satu desa yang terkenal dengan pembuat kerajinan dari kain perca. Kain perca adalah kain sisa yang sudah tidak digunakan. Hal ini disebabkan di Desa Makmur terdapat industri konveksi (perusahaan pakaian). Kain-kain sisa produksi tersebut dimanfaatkan oleh warga Desa Makmur untuk membuat kerajinan. Salah satu produk yang dihasilkan adalah keset. keset buatan warga desa Makmur sudah terjual di berbagai daerah di Indonesia.</p><p style="margin-bottom: 10px; text-align: justify;">Keset yang diproduksi terdapat tiga jenis. Berikut adalah bentuk, panjang, dan berat masing-masing jenis keset produksi Desa Makmur.</p><img src="soal24.png"><p style="margin-bottom: 10px; text-align: justify;">keset-keset ini akan dikirim ke berbagai daerah di Indonesia. Keset dikemas dalam sebuah kardus. Di dalam satu kardus, ada dua jenis keset yang berbeda. banyak keset pada setiap kardus akan dimaksimalkan namun total berat tidak boleh melebihi 10 kg.</p><p style="margin-bottom: 10px; text-align: justify;">Berapa banyak keset yang sebaiknya dimasukkan ke dalam kardus?</p>`,
                 pertanyaan: "Pilih Benar atau Salah untuk setiap jumlah keset!",
-                pilihan: [
-                    "12 buah keset.",
-                    "7 buah keset.",
-                    "6 buah keset."
-                ],
+                pilihan: ["12 buah keset.", "7 buah keset.", "6 buah keset."],
                 kunci: ["0_B", "1_S", "2_S"]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Desa makmur salah satu desa yang terkenal dengan pembuat kerajinan dari kain perca. Kain perca adalah kain sisa yang sudah tidak digunakan. Hal ini disebabkan di Desa Makmur terdapat industri konveksi (perusahaan pakaian). Kain-kain sisa produksi tersebut dimanfaatkan oleh warga Desa Makmur untuk membuat kerajinan. Salah satu produk yang dihasilkan adalah keset. keset buatan warga desa Makmur sudah terjual di berbagai daerah di Indonesia.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Keset yang diproduksi terdapat tiga jenis. Berikut adalah bentuk, panjang, dan berat masing-masing jenis keset produksi Desa Makmur.</p>
-                    <img src="soal24.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Suatu hari, terdapat pesanan keset jenis 2 yang diberi hiasan pada setiap sudutnya. </p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Desa makmur salah satu desa yang terkenal dengan pembuat kerajinan dari kain perca. Kain perca adalah kain sisa yang sudah tidak digunakan. Hal ini disebabkan di Desa Makmur terdapat industri konveksi (perusahaan pakaian). Kain-kain sisa produksi tersebut dimanfaatkan oleh warga Desa Makmur untuk membuat kerajinan. Salah satu produk yang dihasilkan adalah keset. keset buatan warga desa Makmur sudah terjual di berbagai daerah di Indonesia.</p><p style="margin-bottom: 10px; text-align: justify;">Keset yang diproduksi terdapat tiga jenis. Berikut adalah bentuk, panjang, dan berat masing-masing jenis keset produksi Desa Makmur.</p><img src="soal24.png"><p style="margin-bottom: 10px; text-align: justify;">Suatu hari, terdapat pesanan keset jenis 2 yang diberi hiasan pada setiap sudutnya. </p>`,
                 pertanyaan: "Berapa banyak hiasan yang ada pada satu keset tersebut?",
-                pilihan: [
-                    "2 hiasan",
-                    "4 hiasan",
-                    "5 hiasan",
-                    "6 hiasan"
-                ],
+                pilihan: ["2 hiasan", "4 hiasan", "5 hiasan", "6 hiasan"],
                 kunci: [1] 
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Pengusaha UMKM sedang merintis usaha roti. Ada dua cabang yang telah dibuka yakni cabang Jakarta dan Tangerang.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Berikut ini data produksi roti dari dua cabang tersebut:</p>
-                    <img src="grafik-roti-soal.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin-bottom: 10px; text-align: justify;">Sumbu x menyatakan bulan produksi, sedangkan sumbu y menyatakan jumlah roti yang diproduksi.</p>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Pengusaha UMKM sedang merintis usaha roti. Ada dua cabang yang telah dibuka yakni cabang Jakarta dan Tangerang.</p><p style="margin-bottom: 10px; text-align: justify;">Berikut ini data produksi roti dari dua cabang tersebut:</p><img src="grafik-roti-soal.jpg"><p style="margin-bottom: 10px; text-align: justify;">Sumbu x menyatakan bulan produksi, sedangkan sumbu y menyatakan jumlah roti yang diproduksi.</p>`,
                 pertanyaan: "Berdasarkan informasi yang diberikan, manakah gabungan produksi roti yang tepat dari dua cabang tersebut?",
                 pilihan: [
-                    "<img src='grafik-roti-a.jpg' style='max-width: 250px; border-radius: 6px;'>",
-                    "<img src='grafik-roti-b.jpg' style='max-width: 250px; border-radius: 6px;'>",
-                    "<img src='grafik-roti-c.jpg' style='max-width: 250px; border-radius: 6px;'>",
-                    "<img src='grafik-roti-d.jpg' style='max-width: 250px; border-radius: 6px;'>"
+                    "<img src='grafik-roti-a.jpg' style='max-width: 200px;'>",
+                    "<img src='grafik-roti-b.jpg' style='max-width: 200px;'>",
+                    "<img src='grafik-roti-c.jpg' style='max-width: 200px;'>",
+                    "<img src='grafik-roti-d.jpg' style='max-width: 200px;'>"
                 ],
                 kunci: [3]
             },
             {
                 tipe: "Ganda Kompleks",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Tahukah kamu apa itu <i>Screen Time</i>? <i>Screen Time</i> adalah waktu yang dihabiskan untuk menonton TV, menggunakan komputer atau laptop, bermain <i>game</i>, <i>handphone</i>, dan sejenisnya. <i>Screen Time</i> secara berlebihan memberikan dampak yang tidak baik, seperti mata minus atau rabun jauh.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Oleh karena itu, Kementrian Kesehatan memberikan batas <i>Screen Time</i> anak. Batas <i>screen time</i> Siska yang berusia 16 tahun yaitu 2 jam pada hari sekolah dan 2,5 jam pada hari libur.</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Pemantauan lebih lanjut dilakukan oleh sekolah dengan meminta laporan <i>screen time</i> Siska setiap hari. Berikut laporan yang Siska berikan kepada sekolah.</p>
-                    <img src="grafik-screentime.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                `,
-                pertanyaan: "Siska sudah melewati batas <i>screen time</i> yang diperbolehkan. Ia disarankan untuk mengurangi <i>screen time</i> agar tidak timbul dampak yang buruk. Tentukanlah pengurangan waktu total <i>screen time</i> yang dapat dilakukan oleh Siska pada hari sekolah!<br><span style='font-size: 0.8em; color: #3b82f6; font-weight: normal;'>Pilih semua jawaban benar! Jawaban benar lebih dari satu.</span>",
-                pilihan: [
-                    "6 jam",
-                    "5 jam",
-                    "4 jam"
-                ],
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Tahukah kamu apa itu <i>Screen Time</i>? <i>Screen Time</i> adalah waktu yang dihabiskan untuk menonton TV, menggunakan komputer atau laptop, bermain <i>game</i>, <i>handphone</i>, dan sejenisnya. <i>Screen Time</i> secara berlebihan memberikan dampak yang tidak baik, seperti mata minus atau rabun jauh.</p><p style="margin-bottom: 10px; text-align: justify;">Oleh karena itu, Kementrian Kesehatan memberikan batas <i>Screen Time</i> anak. Batas <i>screen time</i> Siska yang berusia 16 tahun yaitu 2 jam pada hari sekolah dan 2,5 jam pada hari libur.</p><p style="margin-bottom: 10px; text-align: justify;">Pemantauan lebih lanjut dilakukan oleh sekolah dengan meminta laporan <i>screen time</i> Siska setiap hari. Berikut laporan yang Siska berikan kepada sekolah.</p><img src="grafik-screentime.jpg">`,
+                pertanyaan: "Siska sudah melewati batas <i>screen time</i> yang diperbolehkan. Ia disarankan untuk mengurangi <i>screen time</i> agar tidak timbul dampak yang buruk. Tentukanlah pengurangan waktu total <i>screen time</i> yang dapat dilakukan oleh Siska pada hari sekolah!",
+                pilihan: ["6 jam", "5 jam", "4 jam"],
                 kunci: [0, 1]
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Pak Fajar adalah pengurus kantin sekolah yang menjual beraneka macam makanan dan minuman. Pak Fajar selalu mendata jumlah menu yang terjual setiap hari. Berikut adalah penjualan di kantin untuk hari ini (Kamis).</p>
-                    <img src="grafik-kantin.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Pak Fajar adalah pengurus kantin sekolah yang menjual beraneka macam makanan dan minuman. Pak Fajar selalu mendata jumlah menu yang terjual setiap hari. Berikut adalah penjualan di kantin untuk hari ini (Kamis).</p><img src="grafik-kantin.png">`,
                 pertanyaan: "Berapa banyak murid yang membeli telur gulung?",
-                pilihan: [
-                    "22",
-                    "23",
-                    "24",
-                    "25"
-                ],
+                pilihan: ["22", "23", "24", "25"],
                 kunci: [1]
             },
             {
                 tipe: "Benar Salah",
-                wacana: `
-                    <p style="margin-bottom: 10px; text-align: justify;">Tahukah kalian, ternyata panas bumi yang dihasilkan oleh gunung berapi bisa menjadi pembangkit listrik, loh. Penelitian menunjukkan bahwa beberapa gunung berapi bisa menghasilkan daya listrik sebesar 1.000 Megawatt (Mw). Wow, banyak sekali kan!</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">Padahal 50 Mw saja sudah cukup untuk 50.000 rumah. Indonesia sebenarnya bisa menjadi pemimpin dunia di bidang ini, karena banyak gunung berapi yang masih aktif. Indonesia bisa memanfaatkan panasnya magma dan uap yang keluar sebagai sumber penghasil listrik. Berikut ini adalah data gunung berapi yang masih aktif di beberapa negara dari tahun 1960 sampai tahun 2023.</p>
-                    <img src="grafik-gunung.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
-                        <p style="margin-bottom: 0; color: #334155; text-align: justify;">Peneliti mengatakan bahwa dengan jumlah gunung berapi yang ada di Tonga, negara tersebut dapat menghasilkan paling sedikit <strong>450 Mw listrik</strong>. Bila setiap gunung api aktif diasumsikan dapat menghasilkan setidaknya energi listrik yang sama, maka berapakah besar energi listrik yang dihasilkan oleh negara lainnya?</p>
-                    </div>
-                `,
+                wacana: `<p style="margin-bottom: 10px; text-align: justify;">Tahukah kalian, ternyata panas bumi yang dihasilkan oleh gunung berapi bisa menjadi pembangkit listrik, loh. Penelitian menunjukkan bahwa beberapa gunung berapi bisa menghasilkan daya listrik sebesar 1.000 Megawatt (Mw). Wow, banyak sekali kan!</p><p style="margin-bottom: 10px; text-align: justify;">Padahal 50 Mw saja sudah cukup untuk 50.000 rumah. Indonesia sebenarnya bisa menjadi pemimpin dunia di bidang ini, karena banyak gunung berapi yang masih aktif. Indonesia bisa memanfaatkan panasnya magma dan uap yang keluar sebagai sumber penghasil listrik. Berikut ini adalah data gunung berapi yang masih aktif di beberapa negara dari tahun 1960 sampai tahun 2023.</p><img src="grafik-gunung.jpg"><div style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;"><p style="margin-bottom: 0; color: #334155; text-align: justify;">Peneliti mengatakan bahwa dengan jumlah gunung berapi yang ada di Tonga, negara tersebut dapat menghasilkan paling sedikit <strong>450 Mw listrik</strong>. Bila setiap gunung api aktif diasumsikan dapat menghasilkan setidaknya energi listrik yang sama, maka berapakah besar energi listrik yang dihasilkan oleh negara lainnya?</p></div>`,
                 pertanyaan: "Tentukan Benar atau Salah untuk setiap pernyataan berikut ini!",
                 pilihan: [
                     "Gunung berapi di Rusia dapat menghasilkan paling sedikit 1.350 Mw listrik.",
@@ -614,51 +369,101 @@
             },
             {
                 tipe: "Pilihan Ganda",
-                wacana: `
-                    <p style="margin-bottom: 10px; font-weight: bold; text-align: center;">Karya Wisata</p>
-                    <p style="margin-bottom: 10px; text-align: justify;">SD Pelita mengadakan kegiatan karya wisata ke Monumen Nasional (Monas). Siswa akan berangkat dari sekolah menuju ke Monas menggunakan bus. Pak Amir sebagai guru mendata jumlah siswa kelas 6 yang mengikuti kegiatan karya wisata tersebut. Berikut data yang didapatkan Pak Amir.</p>
-                    <img src="grafik-karyawisata.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 15px;">
-                `,
+                wacana: `<p style="margin-bottom: 10px; font-weight: bold; text-align: center;">Karya Wisata</p><p style="margin-bottom: 10px; text-align: justify;">SD Pelita mengadakan kegiatan karya wisata ke Monumen Nasional (Monas). Siswa akan berangkat dari sekolah menuju ke Monas menggunakan bus. Pak Amir sebagai guru mendata jumlah siswa kelas 6 yang mengikuti kegiatan karya wisata tersebut. Berikut data yang didapatkan Pak Amir.</p><img src="grafik-karyawisata.png">`,
                 pertanyaan: "Seluruh siswa kelas 6 akan menempati 1 bus yang dapat menampung paling banyak 72 orang siswa. Diketahui tidak ada kursi tersisa di bus tersebut. Berapa banyak siswa kelas 6C yang mengikuti kegiatan karya wisata?",
-                pilihan: [
-                    "22 siswa.",
-                    "23 siswa.",
-                    "24 siswa.",
-                    "25 siswa."
-                ],
+                pilihan: ["22 siswa.", "23 siswa.", "24 siswa.", "25 siswa."],
                 kunci: [1]
             }
-            
         ];
-        // ==========================================
 
+        // ---------------------------------------------------------
+        // 3. LOGIKA APLIKASI (AMAN REFRESH & TIMER)
+        // ---------------------------------------------------------
         let timerSiswa = null;
         let currentIndex = 0;
         let jawabanSiswa = []; 
         let ujianSelesai = false; 
         let namaSiswaAktif = ""; 
 
-        // AUTO-LOGIN JIKA SEBELUMNYA REFRESH HALAMAN
+        // AUTO-LOGIN JIKA SEBELUMNYA REFRESH
         window.onload = function() {
-            if (localStorage.getItem('nama_siswa_ahe')) {
-                const savedIndex = localStorage.getItem('index_soal_ahe');
+            if (localStorage.getItem('nama_mtk_aktif')) {
+                const savedIndex = localStorage.getItem('index_mtk_aktif');
                 if (savedIndex) currentIndex = parseInt(savedIndex);
                 masukSiswa(true);
             }
         };
 
-        // FUNGSI UTAMA SISWA
+        // FUNGSI GURU
+        function bukaModalGuru() { document.getElementById('modal-guru').classList.remove('hidden'); }
+        function tutupModalGuru() { document.getElementById('modal-guru').classList.add('hidden'); document.getElementById('input-sandi-guru').value = ''; }
+        
+        function prosesMasukGuru() {
+            const sandi = document.getElementById('input-sandi-guru').value;
+            if (sandi === 'ALDO123') {
+                tutupModalGuru();
+                document.getElementById('layar-login').classList.add('hidden');
+                document.getElementById('guru-page').classList.remove('hidden');
+                muatDaftarNilaiGuru();
+            } else {
+                alert("Sandi salah! Silakan coba lagi.");
+            }
+        }
+
+        function muatDaftarNilaiGuru() {
+            db.ref('tka_mtk/hasil').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tabel = document.getElementById('tabel-hasil-siswa');
+                tabel.innerHTML = '';
+                
+                if (data) {
+                    let nomor = 1;
+                    for (const key in data) {
+                        const item = data[key];
+                        const listSalah = item.salah || '-';
+                        tabel.innerHTML += `
+                            <tr class="hover:bg-gray-50 border-b">
+                                <td class="p-3 text-center font-bold text-gray-500">${nomor++}</td>
+                                <td class="p-3 text-gray-800 font-bold">${item.nama}</td>
+                                <td class="p-3 text-center text-gray-600">${item.benar} / ${paketSoalTKA.length}</td>
+                                <td class="p-3 text-center font-black text-blue-600 text-lg">${item.nilai}</td>
+                                <td class="p-3 text-sm font-semibold text-red-500 max-w-xs break-words">${listSalah}</td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    tabel.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-400">Belum ada nilai yang masuk.</td></tr>`;
+                }
+            });
+        }
+
+        function kembaliKeLoginDariGuru() {
+            document.getElementById('guru-page').classList.add('hidden');
+            document.getElementById('layar-login').classList.remove('hidden');
+        }
+
+        function resetDatabaseGuru() {
+            if (confirm("Yakin ingin menghapus semua nilai siswa dari database?")) {
+                db.ref('tka_mtk/hasil').set(null).then(() => { alert("Tabel nilai berhasil dikosongkan!"); });
+            }
+        }
+
+        // FUNGSI SISWA
+        function mulaiUjian() {
+            masukSiswa(false);
+        }
+
         function masukSiswa(isAuto = false) {
             if (!isAuto) {
-                namaSiswaAktif = document.getElementById('nama-siswa').value.trim();
-                if(!namaSiswaAktif) { alert("Isi nama dulu ya!"); return; }
-                localStorage.setItem('nama_siswa_ahe', namaSiswaAktif); 
+                namaSiswaAktif = document.getElementById('input-nama').value.trim();
+                if(!namaSiswaAktif) { alert("Namamu belum diisi, ayo isi dulu!"); return; }
+                localStorage.setItem('nama_mtk_aktif', namaSiswaAktif); 
                 currentIndex = 0;
             } else {
-                namaSiswaAktif = localStorage.getItem('nama_siswa_ahe');
+                namaSiswaAktif = localStorage.getItem('nama_mtk_aktif');
             }
 
-            const savedJawaban = localStorage.getItem('jawaban_ahe_' + namaSiswaAktif);
+            const savedJawaban = localStorage.getItem('jawaban_mtk_' + namaSiswaAktif);
             if (savedJawaban) {
                 jawabanSiswa = JSON.parse(savedJawaban);
             } else {
@@ -667,43 +472,37 @@
             
             ujianSelesai = false;
             
-            // SEMBUNYIKAN LOGIN, TAMPILKAN AREA UJIAN
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('siswa-page').classList.remove('hidden');
+            document.getElementById('layar-login').classList.add('hidden');
             document.getElementById('area-ujian').classList.remove('hidden');
-            document.getElementById('area-selesai').classList.add('hidden');
+            document.getElementById('header-nama-siswa').innerText = namaSiswaAktif;
             
             renderSoal(currentIndex);
-            
-            // SET DURASI UJIAN (120 Menit / 2 Jam)
-            if(!timerSiswa) { mulaiTimerLokal(120); }
+            if(!timerSiswa) { mulaiTimerLokal(120); } // 2 Jam
         }
 
         function mulaiTimerLokal(menit) {
-            let endTimeSiswa = localStorage.getItem('endtime_ahe_' + namaSiswaAktif);
+            let endTimeSiswa = localStorage.getItem('endtime_mtk_' + namaSiswaAktif);
             
             if (!endTimeSiswa) {
-                // Konversi 120 menit ke milidetik = 120 * 60 * 1000
                 endTimeSiswa = Date.now() + (menit * 60 * 1000);
-                localStorage.setItem('endtime_ahe_' + namaSiswaAktif, endTimeSiswa);
+                localStorage.setItem('endtime_mtk_' + namaSiswaAktif, endTimeSiswa);
             } else {
                 endTimeSiswa = parseInt(endTimeSiswa);
             }
 
             const timerElemen = document.getElementById('timer-display');
-
+            clearInterval(timerSiswa);
+            
             timerSiswa = setInterval(() => {
                 const sisa = endTimeSiswa - Date.now();
-                if(sisa <= 0) {
-                    // WAKTU HABIS
+                if (sisa <= 0) {
                     clearInterval(timerSiswa);
                     timerElemen.innerText = "00:00:00";
                     if(!ujianSelesai) {
-                        simpanJawabanSaatIni();
-                        koreksiOtomatis();
+                        alert("Waktu Habis! Jawabanmu otomatis dikumpulkan.");
+                        kumpulkanJawaban(true);
                     }
                 } else {
-                    // Konversi milidetik ke jam, menit, detik
                     const totalDetik = Math.floor(sisa / 1000);
                     const jam = Math.floor(totalDetik / 3600);
                     const mnt = Math.floor((totalDetik % 3600) / 60);
@@ -712,20 +511,20 @@
                     let formatWaktu = `${jam.toString().padStart(2, '0')}:${mnt.toString().padStart(2, '0')}:${dtk.toString().padStart(2, '0')}`;
                     timerElemen.innerText = formatWaktu;
 
-                    // Beri warna merah jika sisa waktu <= 3 menit (180 detik)
-                    if(totalDetik <= 180) {
-                        timerElemen.classList.add('waktu-habis');
-                    } else {
-                        timerElemen.classList.remove('waktu-habis');
-                    }
+                    if (totalDetik <= 180) { timerElemen.classList.add('waktu-habis'); } 
+                    else { timerElemen.classList.remove('waktu-habis'); }
                 }
             }, 1000);
         }
 
-        function navigasi(arah) { 
+        function gantiSoal(arah) { 
             simpanJawabanSaatIni(); 
-            currentIndex += arah; 
-            renderSoal(currentIndex); 
+            const newIndex = currentIndex + arah;
+            if (newIndex >= 0 && newIndex < paketSoalTKA.length) {
+                currentIndex = newIndex;
+                renderSoal(currentIndex);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function simpanJawabanSaatIni() {
@@ -736,22 +535,22 @@
                 return el.value.includes('_') ? el.value : parseInt(el.value);
             });
             
-            if(namaSiswaAktif) {
-                localStorage.setItem('jawaban_ahe_' + namaSiswaAktif, JSON.stringify(jawabanSiswa));
-                localStorage.setItem('index_soal_ahe', currentIndex);
+            if (namaSiswaAktif) {
+                localStorage.setItem('jawaban_mtk_' + namaSiswaAktif, JSON.stringify(jawabanSiswa));
+                localStorage.setItem('index_mtk_aktif', currentIndex);
             }
         }
 
         function renderSoal(indeks) {
             const s = paketSoalTKA[indeks];
-            document.getElementById('nomor-soal-display').innerText = `Soal ${indeks + 1}/${paketSoalTKA.length}`;
-            const wadahWacana = document.getElementById('konten-wacana');
+            document.getElementById('nomor-soal-display').innerText = `${indeks + 1}/${paketSoalTKA.length}`;
             
-            if(s.wacana) { 
-                wadahWacana.style.display = "block"; 
+            const wadahWacana = document.getElementById('konten-wacana');
+            if (s.wacana) { 
+                wadahWacana.classList.remove('hidden'); 
                 wadahWacana.innerHTML = s.wacana; 
             } else { 
-                wadahWacana.style.display = "none"; 
+                wadahWacana.classList.add('hidden'); 
             }
             
             document.getElementById('konten-pertanyaan').innerHTML = s.pertanyaan;
@@ -793,8 +592,7 @@
                 });
                 htmlTable += `</tbody></table></div>`;
                 containerPilihan.innerHTML = htmlTable;
-            } 
-            else {
+            } else {
                 const type = s.tipe === 'Ganda Kompleks' ? 'checkbox' : 'radio';
                 s.pilihan.forEach((pil, i) => {
                     const isChecked = savedAns.includes(i) ? "checked" : "";
@@ -807,108 +605,87 @@
                 });
             }
 
-            document.getElementById('btn-prev').style.display = indeks === 0 ? 'none' : 'block';
-            if (indeks === paketSoalTKA.length - 1) {
-                document.getElementById('btn-next').style.display = 'none';
-                document.getElementById('btn-selesai').style.display = 'block';
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const btnSelesai = document.getElementById('btn-selesai');
+
+            if (indeks === 0) {
+                btnPrev.classList.add('hidden');
             } else {
-                document.getElementById('btn-next').style.display = 'block';
-                document.getElementById('btn-selesai').style.display = 'none';
+                btnPrev.classList.remove('hidden');
+            }
+
+            if (indeks === paketSoalTKA.length - 1) {
+                btnNext.classList.add('hidden');
+                btnSelesai.classList.remove('hidden');
+            } else {
+                btnNext.classList.remove('hidden');
+                btnSelesai.classList.add('hidden');
             }
         }
 
-        function kumpulkanMandiri() {
-            if(confirm("Yakin mau dikumpul sekarang?")) {
-                simpanJawabanSaatIni();
-                koreksiOtomatis();
+        function kumpulkanJawaban(autoSubmit) {
+            simpanJawabanSaatIni();
+            
+            if (!autoSubmit) {
+                let totalTerjawab = jawabanSiswa.filter(ans => ans && ans.length > 0).length;
+                if (totalTerjawab < paketSoalTKA.length) {
+                    if (!confirm(`Ada ${paketSoalTKA.length - totalTerjawab} soal belum dijawab. Yakin selesai?`)) return;
+                } else {
+                    if (!confirm(`Semua soal telah terjawab. Kumpulkan sekarang?`)) return;
+                }
             }
-        }
 
-        function koreksiOtomatis() {
             ujianSelesai = true;
             clearInterval(timerSiswa);
             document.getElementById('area-ujian').classList.add('hidden');
-            document.getElementById('area-selesai').classList.remove('hidden');
+            document.getElementById('layar-hasil').classList.remove('hidden');
 
             let benar = 0;
+            let soalSalah = [];
             const total = paketSoalTKA.length;
 
             paketSoalTKA.forEach((soal, i) => {
                 const jawab = jawabanSiswa[i] || [];
                 const kunci = soal.kunci || [];
 
+                let isBenar = false;
                 if (jawab.length === kunci.length && kunci.every(val => jawab.includes(val))) {
                     benar++;
+                    isBenar = true;
+                }
+
+                if (!isBenar) {
+                    soalSalah.push(i + 1); // Simpan nomor soal (mulai dari 1)
                 }
             });
 
             const nilaiAkhir = Math.round((benar / total) * 100);
-            document.getElementById('skor-angka').innerText = nilaiAkhir;
-            document.getElementById('detail-skor').innerText = `Benar ${benar} dari ${total} soal`;
+            const teksSalah = soalSalah.length > 0 ? soalSalah.join(', ') : '-';
             
-            // Hapus cache agar siswa tidak otomatis masuk jika me-refresh halaman nilai
-            localStorage.removeItem('nama_siswa_ahe');
-            localStorage.removeItem('jawaban_ahe_' + namaSiswaAktif);
-            localStorage.removeItem('index_soal_ahe');
-            localStorage.removeItem('endtime_ahe_' + namaSiswaAktif);
+            document.getElementById('nama-hasil').innerText = namaSiswaAktif;
+            document.getElementById('skor-akhir').innerText = nilaiAkhir;
+            document.getElementById('detail-benar-akhir').innerText = `Benar ${benar} dari ${total} soal`;
+
+            // SIMPAN KE FIREBASE
+            const keyAman = namaSiswaAktif.replace(/[.#$\[\]\/]/g, '_');
+            db.ref('tka_mtk/hasil/' + keyAman).set({
+                nama: namaSiswaAktif,
+                benar: benar,
+                nilai: nilaiAkhir,
+                salah: teksSalah
+            });
+
+            // Hapus Sesi Ujian di LocalStorage agar perangkat bisa dipakai anak lain
+            localStorage.removeItem('nama_mtk_aktif');
+            localStorage.removeItem('jawaban_mtk_' + namaSiswaAktif);
+            localStorage.removeItem('index_mtk_aktif');
+            localStorage.removeItem('endtime_mtk_' + namaSiswaAktif);
         }
 
         function keluarKeAwal() {
             location.reload();
         }
     </script>
-</head>
-<body class="bg-gray-100 font-sans min-h-screen">
-    <!-- HALAMAN AWAL (LOGIN) -->
-    <div id="login-page" class="flex flex-col items-center justify-center min-h-screen px-4">
-        <div class="bg-white p-6 rounded-3xl shadow-lg w-full max-w-sm text-center border-t-8 border-blue-500">
-            <h1 class="text-2xl font-black text-blue-600 mb-1">CBT AKM</h1>
-            <p class="text-gray-500 mb-6 text-xs font-bold">LES AHE</p>
-            <input type="text" id="nama-siswa" placeholder="Ketik nama panggilanmu" class="w-full p-3 bg-gray-100 border-2 border-transparent rounded-xl focus:bg-white focus:border-blue-500 font-bold text-center text-lg mb-4 outline-none">
-            <button onclick="masukSiswa()" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-lg shadow-[0_4px_0_0_#1d4ed8]">MASUK UJIAN</button>
-        </div>
-    </div>
-
-    <!-- HALAMAN SISWA -->
-    <div id="siswa-page" class="hidden max-w-2xl mx-auto p-2 md:p-4">
-
-        <!-- RUANG UJIAN COMPACT -->
-        <div id="area-ujian" class="hidden">
-            <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center mb-3 sticky top-2 z-10 border-b-2 border-blue-500">
-                <span id="nomor-soal-display" class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md text-sm">Soal 1</span>
-                <div class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                    <span id="timer-display" class="text-lg font-black tabular-nums">02:00:00</span>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-3 konten-soal">
-                <div id="konten-wacana" class="mb-3 text-gray-800 text-sm md:text-base leading-relaxed max-h-[35vh] overflow-y-auto bg-amber-50 p-3 rounded-lg border border-amber-200 shadow-inner scroll-wacana hidden"></div>
-                <h3 id="konten-pertanyaan" class="text-base md:text-lg font-bold text-gray-900 mb-4 leading-snug"></h3>
-                <div id="wadah-pilihan" class="flex flex-col"></div>
-            </div>
-            
-            <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm">
-                <button id="btn-prev" onclick="navigasi(-1)" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg text-sm hidden">Kembali</button>
-                <div class="flex-1"></div> 
-                <button id="btn-next" onclick="navigasi(1)" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg text-sm shadow-[0_4px_0_0_#1d4ed8]">Lanjut</button>
-                <button id="btn-selesai" onclick="kumpulkanMandiri()" class="bg-green-500 text-white font-bold py-2 px-6 rounded-lg text-sm shadow-[0_4px_0_0_#15803d] hidden">Kumpul</button>
-            </div>
-        </div>
-
-        <!-- RUANG SELESAI -->
-        <div id="area-selesai" class="hidden flex flex-col items-center justify-center py-8 text-center">
-            <div class="bg-white p-8 rounded-3xl shadow-lg w-full border-t-8 border-green-500 mb-4">
-                <div class="text-5xl mb-3">SELAMAT!</div>
-                <h2 class="text-xl font-black text-gray-800 mb-1">Ujian Selesai</h2>
-                <p class="text-gray-500 mb-5 text-sm">Jawabanmu sudah berhasil dikoreksi sistem.</p>
-                <div class="bg-blue-50 rounded-2xl p-5 border-2 border-blue-100">
-                    <p class="text-xs font-bold text-gray-500 mb-1">NILAI AKHIR KAMU</p>
-                    <p id="skor-angka" class="text-6xl font-black text-blue-600 mb-1">0</p>
-                    <p id="detail-skor" class="text-gray-600 font-medium bg-white inline-block px-3 py-1 rounded-md shadow-sm text-sm">Benar 0 dari 0 soal</p>
-                </div>
-                <button onclick="keluarKeAwal()" class="mt-6 bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg text-sm">Kembali ke Awal</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
